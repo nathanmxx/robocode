@@ -13,7 +13,7 @@ param(
     [int]$Rounds = 5,
     [int]$Width  = 800,
     [int]$Height = 600,
-    [string]$Me  = 'nx.Leviathan*',
+    [string]$Me  = 'tcn.TCN*',
     [string]$Opponent,
     [switch]$Display
 )
@@ -80,7 +80,7 @@ finally { Pop-Location }
 if (Test-Path $resultsFile) {
     Write-Host ''
     Get-Content $resultsFile | ForEach-Object {
-        if     ($_ -match [regex]::Escape('Leviathan')) { Write-Host $_ -ForegroundColor Green }
+        if     ($_ -match [regex]::Escape('TCN')) { Write-Host $_ -ForegroundColor Green }
         elseif ($_ -match '^\s*Rank') { Write-Host $_ -ForegroundColor DarkGray }
         else   { Write-Host $_ }
     }

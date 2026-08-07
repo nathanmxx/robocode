@@ -1,4 +1,4 @@
-package nx;
+package tcn;
 
 import robocode.Bullet;
 
@@ -41,13 +41,13 @@ public class Shield {
     /** Tolerancia de encontro entre o interceptador e o alvo, em turnos. */
     private static final double TIMING_SLACK = 0.55;
 
-    private final Leviathan bot;
+    private final TCN bot;
     private final List<Bullet> mine = new ArrayList<Bullet>();
 
     private int parryAttempts;
     private int parrySuccesses;
 
-    public Shield(Leviathan bot) {
+    public Shield(TCN bot) {
         this.bot = bot;
     }
 

@@ -14,8 +14,8 @@ $RobocodeHome = 'C:\robocode'
 $SrcDir       = Join-Path $root 'src'
 $OutDir       = Join-Path $root 'build\classes'
 $DistDir      = Join-Path $root 'dist'
-$Package      = 'nx'
-$MainClass    = 'Leviathan'
+$Package      = 'tcn'
+$MainClass    = 'TCN'
 
 # Bytecode alvo. Java 8 e proposital: o .class resultante carrega em qualquer
 # JVM 8 ou superior, entao o robo funciona na maquina oficial do evento
@@ -71,7 +71,7 @@ Get-ChildItem $SrcDir -Filter '*.properties' -Recurse | ForEach-Object {
 }
 
 # ------------------------------------------------ instalar no diretorio de robos
-# Todo pacote compilado vai para C:\robocode\robots: o de competicao (nx) e os
+# Todo pacote compilado vai para C:\robocode\robots: o de competicao (tcn) e os
 # bots de treino (spar), que precisam estar la para as batalhas de teste.
 foreach ($pkgDir in Get-ChildItem $OutDir -Directory) {
     $dst = Join-Path $RobocodeHome "robots\$($pkgDir.Name)"
@@ -90,7 +90,7 @@ if (Test-Path $db) { Remove-Item $db -Force }
 # Um .jar e um zip; empacotamos via .NET para nao depender do jar.exe, que nao
 # acompanha todos os runtimes (o JBR do PyCharm, por exemplo, nao tem).
 New-Item -ItemType Directory -Force -Path $DistDir | Out-Null
-$jarOut = Join-Path $DistDir 'leviathan.jar'
+$jarOut = Join-Path $DistDir 'tcn.jar'
 if (Test-Path $jarOut) { Remove-Item $jarOut -Force }
 
 # Staging dentro do projeto de proposito: o TEMP do Windows vem como caminho

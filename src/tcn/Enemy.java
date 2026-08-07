@@ -1,4 +1,4 @@
-package nx;
+package tcn;
 
 import robocode.ScannedRobotEvent;
 
@@ -89,7 +89,7 @@ public class Enemy {
         lateralVelocity = 0;
     }
 
-    public void update(ScannedRobotEvent e, Leviathan self) {
+    public void update(ScannedRobotEvent e, TCN self) {
         long now = e.getTime();
 
         absBearing = Util.absolute(self.getHeadingRadians() + e.getBearingRadians());

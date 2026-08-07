@@ -1,4 +1,4 @@
-package nx;
+package tcn;
 
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
@@ -38,10 +38,10 @@ public class Gun {
     /** Tiros minimos antes de confiar na taxa de acerto de um canhao virtual. */
     private static final int MIN_SAMPLES = 10;
 
-    private final Leviathan bot;
+    private final TCN bot;
     private final List<Wave> waves = new ArrayList<Wave>();
 
-    public Gun(Leviathan bot) {
+    public Gun(TCN bot) {
         this.bot = bot;
     }
 
@@ -186,7 +186,7 @@ public class Gun {
     public void update(long now) {
         for (Iterator<Wave> it = waves.iterator(); it.hasNext(); ) {
             Wave w = it.next();
-            Enemy target = Leviathan.KNOWN.get(w.other);
+            Enemy target = TCN.KNOWN.get(w.other);
 
             if (target == null || !target.alive) { it.remove(); continue; }
 

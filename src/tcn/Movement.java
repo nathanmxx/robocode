@@ -1,4 +1,4 @@
-package nx;
+package tcn;
 
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
@@ -32,12 +32,12 @@ public class Movement {
      */
     private static final double SWITCH_MARGIN = 0.92;
 
-    private final Leviathan bot;
+    private final TCN bot;
 
     private Point2D.Double destination;
     private double destinationRisk = Double.MAX_VALUE;
 
-    public Movement(Leviathan bot) {
+    public Movement(TCN bot) {
         this.bot = bot;
     }
 

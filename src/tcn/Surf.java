@@ -1,4 +1,4 @@
-package nx;
+package tcn;
 
 import robocode.HitByBulletEvent;
 
@@ -34,10 +34,10 @@ public class Surf {
     /** Distancia de orbita perseguida quando nao ha nenhuma onda em voo. */
     private static final double IDLE_ORBIT_DISTANCE = 420;
 
-    private final Leviathan bot;
+    private final TCN bot;
     private final List<Wave> incoming = new ArrayList<Wave>();
 
-    public Surf(Leviathan bot) {
+    public Surf(TCN bot) {
         this.bot = bot;
     }
 
@@ -148,7 +148,7 @@ public class Surf {
 
         // Trechos da onda cobertos por projeteis nossos: la ele nao acerta,
         // porque o tiro dele bateria no nosso antes.
-        List<double[]> shadows = Leviathan.USE_BULLET_SHADOW
+        List<double[]> shadows = TCN.USE_BULLET_SHADOW
                 ? bot.shield().shadows(wave, now)
                 : java.util.Collections.<double[]>emptyList();
 

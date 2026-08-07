@@ -1,4 +1,4 @@
-package nx;
+package tcn;
 
 import robocode.AdvancedRobot;
 import robocode.BulletHitBulletEvent;
@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Leviathan.
+ * TCN.
  *
  * O campeonato e decidido em dois jogos diferentes, e o robo troca de cerebro
  * conforme qual deles esta acontecendo:
@@ -40,7 +40,7 @@ import java.util.Map;
  * vem a vantagem acumulada: na rodada 1 o robo esta chutando, na rodada 5 ja
  * conhece o adversario.
  */
-public class Leviathan extends AdvancedRobot {
+public class TCN extends AdvancedRobot {
 
     /** Sobrevive a batalha inteira. Nao limpar entre rodadas. */
     static final Map<String, Enemy> KNOWN = new HashMap<String, Enemy>();
