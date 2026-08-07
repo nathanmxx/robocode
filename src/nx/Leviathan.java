@@ -44,8 +44,15 @@ public class Leviathan extends AdvancedRobot {
     /** Sobrevive a batalha inteira. Nao limpar entre rodadas. */
     static final Map<String, Enemy> KNOWN = new HashMap<String, Enemy>();
 
-    private Point2D.Double position = new Point2D.Double();
+    private final Point2D.Double position = new Point2D.Double();
+
+    /** Area util do campo (descontado o corpo do robo). */
     private Rectangle2D.Double field;
+
+    /** Area onde o movimento pode escolher destinos: recuada da parede. */
+    private Rectangle2D.Double safeField;
+
+    private final Movement movement = new Movement(this);
 
     /** Inimigo escolhido como alvo do canhao neste turno. */
     private Enemy target;
@@ -69,9 +76,15 @@ public class Leviathan extends AdvancedRobot {
                                        getBattleFieldWidth()  - Util.ROBOT_SIZE,
                                        getBattleFieldHeight() - Util.ROBOT_SIZE);
 
+        double inset = 45;
+        safeField = new Rectangle2D.Double(field.x + inset, field.y + inset,
+                                           Math.max(field.width  - 2 * inset, 1),
+                                           Math.max(field.height - 2 * inset, 1));
+
         for (Enemy e : KNOWN.values()) {
             e.newRound();
         }
+        movement.newRound();
 
         while (true) {
             position.setLocation(getX(), getY());
@@ -191,34 +204,17 @@ public class Leviathan extends AdvancedRobot {
     // -------------------------------------------------------------- movimento
 
     /**
-     * Movimento provisorio: orbita o alvo mantendo distancia e evita as paredes.
-     * Sera substituido pelo campo de risco (melee) e pelo wave surfing (duelo).
+     * Dois jogos diferentes, dois movimentos diferentes. Com mais de um inimigo
+     * vivo o que importa e nao morrer, e o campo de risco cuida disso. Restando
+     * um, nao ha mais para onde fugir e o jogo vira esquiva de tiro.
      */
     private void drive() {
-        if (target == null) {
-            setAhead(80);
-            setTurnRightRadians(0.2);
-            return;
+        List<Enemy> live = liveEnemies();
+        if (getOthers() > 1 || live.size() > 1) {
+            movement.driveMelee(live, getTime());
+        } else {
+            movement.driveDuel(target, getTime());
         }
-
-        double desired = target.absBearing + Util.HALF_PI * target.lateralDirection;
-
-        // Corrige para dentro do campo quando a orbita apontaria para a parede.
-        Point2D.Double ahead = Util.project(position, desired, 140);
-        if (!field.contains(ahead)) {
-            desired = Util.angle(position, new Point2D.Double(field.getCenterX(), field.getCenterY()));
-        }
-
-        double turn = Util.relative(desired - getHeadingRadians());
-        int direction = 1;
-        if (Math.abs(turn) > Util.HALF_PI) {          // e mais curto ir de re
-            turn = Util.relative(turn + Math.PI);
-            direction = -1;
-        }
-
-        setTurnRightRadians(turn);
-        setAhead(direction * 100);
-        setMaxVelocity(Util.MAX_VELOCITY);
     }
 
     // ----------------------------------------------------------------- canhao
@@ -288,5 +284,18 @@ public class Leviathan extends AdvancedRobot {
 
     Point2D.Double myPosition() {
         return new Point2D.Double(getX(), getY());
+    }
+
+    /** Posicao atual, atualizada uma vez por turno. Nao alocar por chamada. */
+    Point2D.Double position() {
+        return position;
+    }
+
+    Rectangle2D.Double safeField() {
+        return safeField;
+    }
+
+    Rectangle2D.Double battleField() {
+        return field;
     }
 }
