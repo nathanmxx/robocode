@@ -94,7 +94,12 @@ public class Gun {
         if (bot.getGunHeat() > 0) return null;
         if (bot.getEnergy() <= power + 0.2) return null;
 
-        if (bot.setFireBullet(power) == null) return null;
+        robocode.Bullet fired = bot.setFireBullet(power);
+        if (fired == null) return null;
+
+        // O projetil em voo tambem e defesa: enquanto viaja, bloqueia o trecho
+        // da onda inimiga que ele atravessa.
+        bot.shield().register(fired);
 
         Wave w = new Wave();
         w.origin = new Point2D.Double(me.x, me.y);

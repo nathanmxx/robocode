@@ -88,7 +88,7 @@ public class Surf {
     }
 
     /** Onda mais iminente: a que esta mais perto de nos alcancar. */
-    private Wave closestWave(long now) {
+    public Wave closestWave(long now) {
         Wave best = null;
         double bestGap = Double.MAX_VALUE;
         Point2D.Double me = bot.position();
@@ -146,16 +146,30 @@ public class Surf {
             return;
         }
 
-        double dangerLeft  = dangerOf(wave, -1, now, target);
-        double dangerRight = dangerOf(wave, +1, now, target);
+        // Trechos da onda cobertos por projeteis nossos: la ele nao acerta,
+        // porque o tiro dele bateria no nosso antes.
+        List<double[]> shadows = Leviathan.USE_BULLET_SHADOW
+                ? bot.shield().shadows(wave, now)
+                : java.util.Collections.<double[]>emptyList();
+
+        double dangerLeft  = dangerOf(wave, -1, now, target, shadows);
+        double dangerRight = dangerOf(wave, +1, now, target, shadows);
 
         int direction = dangerLeft < dangerRight ? -1 : +1;
         steerAround(wave.origin, direction);
     }
 
     /** Para onde iriamos parar surfando nesse sentido, e o quao perigoso e isso. */
-    private double dangerOf(Wave wave, int direction, long now, Enemy target) {
+    private double dangerOf(Wave wave, int direction, long now, Enemy target,
+                            List<double[]> shadows) {
         Point2D.Double landing = simulate(wave, direction, now);
+
+        double offset = Util.relative(Util.angle(wave.origin, landing) - wave.directAngle);
+        if (Shield.covered(shadows, offset)) {
+            // Coberto por projetil nosso: e seguro por fisica, nao por estimativa.
+            return 30.0 / Math.max(landing.distance(wave.origin), 60);
+        }
+
         int bin = binOf(wave.guessFactor(landing));
 
         double total = 0;

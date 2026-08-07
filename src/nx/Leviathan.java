@@ -1,6 +1,7 @@
 package nx;
 
 import robocode.AdvancedRobot;
+import robocode.BulletHitBulletEvent;
 import robocode.BulletHitEvent;
 import robocode.DeathEvent;
 import robocode.HitByBulletEvent;
@@ -44,6 +45,10 @@ public class Leviathan extends AdvancedRobot {
     /** Sobrevive a batalha inteira. Nao limpar entre rodadas. */
     static final Map<String, Enemy> KNOWN = new HashMap<String, Enemy>();
 
+    /** Chaves de A/B: medir uma defesa de cada vez, nunca as duas juntas. */
+    static final boolean USE_BULLET_SHADOW = false;
+    static final boolean USE_ACTIVE_PARRY  = false;
+
     private final Point2D.Double position = new Point2D.Double();
 
     /** Area util do campo (descontado o corpo do robo). */
@@ -55,6 +60,7 @@ public class Leviathan extends AdvancedRobot {
     private final Movement movement = new Movement(this);
     private final Gun gun = new Gun(this);
     private final Surf surf = new Surf(this);
+    private final Shield shield = new Shield(this);
 
     /** Inimigo escolhido como alvo do canhao neste turno. */
     private Enemy target;
@@ -89,12 +95,14 @@ public class Leviathan extends AdvancedRobot {
         movement.newRound();
         gun.newRound();
         surf.newRound();
+        shield.newRound();
 
         while (true) {
             position.setLocation(getX(), getY());
 
             gun.update(getTime());     // ondas que chegaram no alvo viram estatistica
             surf.update(getTime());    // ondas inimigas que ja passaram sao descartadas
+            shield.update();           // projeteis nossos que sairam de cena
             chooseTarget();
             driveRadar();
             drive();
@@ -145,6 +153,14 @@ public class Leviathan extends AdvancedRobot {
             enemy.absorbKnownEnergyGain(Util.bulletReward(e.getPower()));
             surf.onHitByBullet(e, enemy, getTime());
         }
+    }
+
+    /**
+     * Um projetil nosso anulou um projetil inimigo. Conta tanto a interceptacao
+     * deliberada quanto a colisao que a sombra provoca por conta propria.
+     */
+    public void onBulletHitBullet(BulletHitBulletEvent e) {
+        shield.onParrySuccess();
     }
 
     public void onHitRobot(HitRobotEvent e) {
@@ -241,7 +257,24 @@ public class Leviathan extends AdvancedRobot {
         // e cada inimigo e visto a cada meia volta, entao a tolerancia acompanha.
         if (target == null || (getTime() - target.lastSeen) > 10) return;
 
+        // O canhao e um recurso unico: usar para interceptar e abrir mao do
+        // troco naquele turno. So compensa quando levar o tiro doeria mais.
+        if (shouldParry() && shield.tryParry(surf.closestWave(getTime()), target, getTime())) {
+            return;
+        }
+
         gun.engage(target, choosePower(target), getTime());
+    }
+
+    /**
+     * De longe e com energia sobrando, atirar de volta rende mais que defender.
+     * De perto a chance de ele acertar dispara, e com pouca energia cada acerto
+     * evitado vale mais que cada acerto dado - abaixo de um certo ponto, um
+     * tiro de potencia 3 e a diferenca entre continuar na arena e sair dela.
+     */
+    private boolean shouldParry() {
+        if (!USE_ACTIVE_PARRY || !isDuel() || target == null) return false;
+        return target.distance < 250 || getEnergy() < 25;
     }
 
     /**
@@ -286,5 +319,9 @@ public class Leviathan extends AdvancedRobot {
 
     Rectangle2D.Double battleField() {
         return field;
+    }
+
+    Shield shield() {
+        return shield;
     }
 }
