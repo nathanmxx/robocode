@@ -36,15 +36,52 @@ rodadas. Na rodada 1 o robô chuta; na rodada 5 já conhece o adversário.
 
 ## Resultados medidos
 
-Benchmark de 30 rodadas (5 rodadas de melee é ruído demais para avaliar mudança).
 Adversários: 10 sample bots + 5 arquétipos de treino em `src/spar/`.
 
 | Cenário | Resultado |
 |---|---|
-| Melee 16 (1000x1000) | 1º lugar, 32472 pts contra 20022 do 2º, 25 de 30 rodadas vencidas |
-| Melee 8 | 1º lugar, 24% da pontuação total (fatia uniforme seria 12,5%) |
+| Melee 16 (800x600) | 1º lugar, 98298 pts contra 65902 do melhor adversário, 51 de 100 rodadas vencidas |
+| Melee 8 (Fase 2) | 1º lugar, 22% da pontuação total (fatia uniforme seria 12,5%) |
+| Melee 4 (Fase 3) | 1º lugar, 38% da pontuação (uniforme: 25%) |
 | Duelo vs cada arquétipo | 30–0, entre 90% e 94% da pontuação |
 | Turnos perdidos | 0 (30 turnos perdidos numa rodada desclassifica) |
+
+### Como medir sem se enganar
+
+Uma rodada isolada de melee com 16 robôs varia de 24k a 33k pontos. **Amostra
+isolada não decide nada** — cheguei a comemorar um ganho de 24284→30055 que a
+segunda amostra desmentiu (24186).
+
+Por isso `src/base/` carrega uma cópia do robô com outro ajuste, e
+`battle.ps1 -Paired` coloca as duas versões **na mesma arena, nas mesmas rodadas**.
+Mesmo assim o piso de ruído é ~5%: diferenças menores que isso não são reais.
+
+### O achado que derrubou a premissa do projeto
+
+O robô nasceu da ideia de que, em melee, sobrevivência vem primeiro e economizar
+tiro é economizar vida. **Medido, isso está errado.** Varredura do par
+(peso de fuga / potência), pareada, 100 rodadas por célula:
+
+| Perfil | vs. neutro |
+|---|---|
+| 1.5 / 0.70 (medroso) | −25% |
+| 1.0 / 1.00 (neutro) | — |
+| 0.8 / 1.25 | +17% |
+| **0.7 / 1.55** | **+27%** ← adotado |
+| 0.6 / 1.90 | empate, dentro do ruído |
+
+Atirar mais sobrevive mais porque acertar devolve 3× a potência em energia e
+inimigo morto para de atirar. E o perfil medroso morre *mais*: com o peso de fuga
+alto, a penalidade de canto fica relativamente fraca e o robô se encurrala fugindo.
+
+### Por que um jar só, e não uma versão por fase
+
+O mesmo perfil agressivo venceu nas três fases de melee com margem parecida
+(+37% / +20% / +24%). Não há evidência de que separar Fase 1, 2 e 3 em ajustes
+diferentes ajude, e o piso de ruído é maior que qualquer diferença plausível entre
+elas. Sobram dois regimes — melee e duelo — que o robô escolhe sozinho por
+`getOthers()`. Um arquivo só, sem risco de carregar o errado sob os 5 minutos de
+ajuste do regulamento (§3.4: nada pode ser alterado depois do carregamento).
 
 ## Sobre o parry
 
