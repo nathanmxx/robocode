@@ -15,6 +15,7 @@ $SrcDir       = Join-Path $root 'src'
 $OutDir       = Join-Path $root 'build\classes'
 $DistDir      = Join-Path $root 'dist'
 $Package      = 'nx'
+$MainClass    = 'Leviathan'
 
 # Bytecode alvo. Java 8 e proposital: o .class resultante carrega em qualquer
 # JVM 8 ou superior, entao o robo funciona na maquina oficial do evento
@@ -104,6 +105,48 @@ Add-Type -AssemblyName System.IO.Compression.FileSystem
 [System.IO.Compression.ZipFile]::CreateFromDirectory($staging, $jarOut)
 Remove-Item $staging -Recurse -Force
 Write-Host "jar    : $jarOut" -ForegroundColor DarkGray
+
+# ------------------------------------------- versao de arquivo unico (compartilhar)
+# Junta o robo inteiro em um .java so, para quem quiser copiar e colar no editor
+# do proprio Robocode sem montar estrutura de pastas. Java aceita varias classes
+# no mesmo arquivo desde que apenas uma seja public e tenha o nome do arquivo -
+# entao as auxiliares perdem o 'public' e viram package-private.
+$singleOut = Join-Path $DistDir "$MainClass.java"
+
+$pkgSrc = Join-Path $SrcDir $Package
+$ordered = Get-ChildItem $pkgSrc -Filter '*.java' |
+           Sort-Object @{ Expression = { if ($_.BaseName -eq $MainClass) { 1 } else { 0 } } }, Name
+
+$imports = $ordered | ForEach-Object { Get-Content $_.FullName } |
+           Where-Object { $_ -match '^import ' } | Sort-Object -Unique
+
+$out = New-Object System.Text.StringBuilder
+[void]$out.AppendLine("package $Package;")
+[void]$out.AppendLine()
+foreach ($i in $imports) { [void]$out.AppendLine($i) }
+
+foreach ($f in $ordered) {
+    [void]$out.AppendLine()
+    foreach ($line in Get-Content $f.FullName) {
+        if ($line -match '^package ' -or $line -match '^import ') { continue }
+        if ($f.BaseName -ne $MainClass) {
+            $line = $line -replace '^public (final )?class ', '$1class '
+        }
+        [void]$out.AppendLine($line)
+    }
+}
+# UTF-8 sem BOM: o Set-Content do PowerShell 5.1 escreve BOM e o javac recusa o
+# arquivo com "illegal character: '﻿'".
+[System.IO.File]::WriteAllText($singleOut, $out.ToString(), (New-Object System.Text.UTF8Encoding($false)))
+
+# Gerar nao basta: so vale entregar o que compila.
+$check = Join-Path $root 'build\single'
+if (Test-Path $check) { Remove-Item $check -Recurse -Force }
+New-Item -ItemType Directory -Force -Path $check | Out-Null
+& $javac -nowarn -source $TargetRelease -target $TargetRelease -encoding UTF-8 `
+         -cp $robocodeJar -d $check $singleOut
+if ($LASTEXITCODE -ne 0) { throw 'a versao de arquivo unico nao compila' }
+Write-Host "unico  : $singleOut" -ForegroundColor DarkGray
 
 $n = (Get-ChildItem $robotsDir -Filter '*.class').Count
 Write-Host "OK - $n classes instaladas em $robotsDir" -ForegroundColor Green
