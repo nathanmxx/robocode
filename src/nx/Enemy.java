@@ -40,6 +40,20 @@ public class Enemy {
     /** Velocidade perpendicular a linha que nos une. */
     public double lateralVelocity;
 
+    // ------------------------------------------------------------ aprendizado
+    // Nada disso e limpo entre rodadas: sao exatamente as estatisticas que fazem
+    // o robo mirar melhor na rodada 5 do que na rodada 1.
+
+    /** Histograma de GuessFactor por segmento: onde este inimigo costuma estar. */
+    public final float[][] gfSegments = new float[Gun.SEGMENTS][Gun.BINS];
+
+    /** Mesmo histograma sem segmentar, usado quando o segmento tem poucos dados. */
+    public final float[] gfGlobal = new float[Gun.BINS];
+
+    /** Placar dos canhoes virtuais contra este inimigo especifico. */
+    public final int[] virtualHits  = new int[Gun.GUN_COUNT];
+    public final int[] virtualShots = new int[Gun.GUN_COUNT];
+
     private double previousEnergy = 100.0;
     private double previousHeading;
     private long   previousScanTime = -1;

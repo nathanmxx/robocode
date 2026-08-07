@@ -53,6 +53,7 @@ public class Leviathan extends AdvancedRobot {
     private Rectangle2D.Double safeField;
 
     private final Movement movement = new Movement(this);
+    private final Gun gun = new Gun(this);
 
     /** Inimigo escolhido como alvo do canhao neste turno. */
     private Enemy target;
@@ -85,10 +86,12 @@ public class Leviathan extends AdvancedRobot {
             e.newRound();
         }
         movement.newRound();
+        gun.newRound();
 
         while (true) {
             position.setLocation(getX(), getY());
 
+            gun.update(getTime());     // ondas que chegaram no alvo viram estatistica
             chooseTarget();
             driveRadar();
             drive();
@@ -219,40 +222,12 @@ public class Leviathan extends AdvancedRobot {
 
     // ----------------------------------------------------------------- canhao
 
-    /**
-     * Mira provisoria: predicao linear iterativa. Convergimos o ponto de impacto
-     * resolvendo "onde ele estara quando o projetil chegar la", que depende de
-     * quando o projetil chega, que depende de onde ele estara.
-     */
     private void aim() {
-        if (target == null || getGunHeat() > 0) return;
+        // Atirar em informacao velha e energia jogada fora. Em melee o radar gira
+        // e cada inimigo e visto a cada meia volta, entao a tolerancia acompanha.
+        if (target == null || (getTime() - target.lastSeen) > 10) return;
 
-        double power = choosePower(target);
-        if (power <= 0) return;
-
-        double speed = Util.bulletSpeed(power);
-        Point2D.Double predicted = target.predictedPosition(getTime());
-
-        for (int i = 0; i < 12; i++) {
-            double time = position.distance(predicted) / speed;
-            Point2D.Double next = Util.project(target.pos, target.heading, target.velocity * time);
-            next.x = Util.clamp(field.getMinX(), next.x, field.getMaxX());
-            next.y = Util.clamp(field.getMinY(), next.y, field.getMaxY());
-            if (next.distance(predicted) < 0.5) {
-                predicted = next;
-                break;
-            }
-            predicted = next;
-        }
-
-        double gunTurn = Util.relative(Util.angle(position, predicted) - getGunHeadingRadians());
-        setTurnGunRightRadians(gunTurn);
-
-        // So dispara com o canhao praticamente alinhado: tiro torto e energia
-        // jogada fora, e energia e vida.
-        if (Math.abs(gunTurn) < 0.06 && getEnergy() > power + 0.4) {
-            setFire(power);
-        }
+        gun.engage(target, choosePower(target), getTime());
     }
 
     /**
