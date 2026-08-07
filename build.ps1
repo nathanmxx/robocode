@@ -70,20 +70,40 @@ Get-ChildItem $SrcDir -Filter '*.properties' -Recurse | ForEach-Object {
 }
 
 # ------------------------------------------------ instalar no diretorio de robos
+# Todo pacote compilado vai para C:\robocode\robots: o de competicao (nx) e os
+# bots de treino (spar), que precisam estar la para as batalhas de teste.
+foreach ($pkgDir in Get-ChildItem $OutDir -Directory) {
+    $dst = Join-Path $RobocodeHome "robots\$($pkgDir.Name)"
+    if (Test-Path $dst) { Remove-Item $dst -Recurse -Force }
+    New-Item -ItemType Directory -Force -Path $dst | Out-Null
+    Copy-Item (Join-Path $pkgDir.FullName '*') $dst -Recurse -Force
+}
 $robotsDir = Join-Path $RobocodeHome "robots\$Package"
-if (Test-Path $robotsDir) { Remove-Item $robotsDir -Recurse -Force }
-New-Item -ItemType Directory -Force -Path $robotsDir | Out-Null
-Copy-Item (Join-Path $OutDir "$Package\*") $robotsDir -Recurse -Force
+
+# O Robocode indexa os robos em robot.database e confia no cache. Sem invalidar,
+# classes recem-compiladas so aparecem depois de um refresh manual na GUI.
+$db = Join-Path $RobocodeHome 'robots\robot.database'
+if (Test-Path $db) { Remove-Item $db -Force }
 
 # ------------------------------------------------- empacotar .jar para entrega
+# Um .jar e um zip; empacotamos via .NET para nao depender do jar.exe, que nao
+# acompanha todos os runtimes (o JBR do PyCharm, por exemplo, nao tem).
 New-Item -ItemType Directory -Force -Path $DistDir | Out-Null
-$jarExe = Join-Path (Split-Path $javac) 'jar.exe'
 $jarOut = Join-Path $DistDir 'leviathan.jar'
-if (Test-Path $jarExe) {
-    if (Test-Path $jarOut) { Remove-Item $jarOut -Force }
-    & $jarExe cf $jarOut -C $OutDir $Package
-    if ($LASTEXITCODE -eq 0) { Write-Host "jar    : $jarOut" -ForegroundColor DarkGray }
-}
+if (Test-Path $jarOut) { Remove-Item $jarOut -Force }
+
+# Staging dentro do projeto de proposito: o TEMP do Windows vem como caminho
+# curto (C:\Users\USURIO~2\...) e o '~' e interpretado pelo PowerShell como o
+# diretorio home, quebrando Remove-Item.
+$staging = Join-Path $root 'build\jar-staging'
+if (Test-Path $staging) { Remove-Item $staging -Recurse -Force }
+New-Item -ItemType Directory -Force -Path (Join-Path $staging $Package) | Out-Null
+Copy-Item (Join-Path $OutDir "$Package\*") (Join-Path $staging $Package) -Recurse -Force
+
+Add-Type -AssemblyName System.IO.Compression.FileSystem
+[System.IO.Compression.ZipFile]::CreateFromDirectory($staging, $jarOut)
+Remove-Item $staging -Recurse -Force
+Write-Host "jar    : $jarOut" -ForegroundColor DarkGray
 
 $n = (Get-ChildItem $robotsDir -Filter '*.class').Count
 Write-Host "OK - $n classes instaladas em $robotsDir" -ForegroundColor Green

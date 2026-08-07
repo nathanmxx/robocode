@@ -22,7 +22,10 @@ $root = Split-Path -Parent $MyInvocation.MyCommand.Definition
 $RobocodeHome = 'C:\robocode'
 
 # Arquetipos que um competidor com IA provavelmente vai produzir.
-$spar = @('spar.Hunter','spar.Circler','spar.Surfer','spar.Rammer','spar.Sniper')
+# O sufixo '*' e obrigatorio: robos carregados como .class solto no diretorio de
+# robos sao "development robots" para o Robocode, e o nome oficial deles leva
+# asterisco. Sem ele o motor responde "Can't find".
+$spar = @('spar.Hunter*','spar.Circler*','spar.Surfer*','spar.Rammer*','spar.Sniper*')
 $samp = @('sample.Crazy','sample.Tracker','sample.SpinBot','sample.Walls','sample.RamFire',
           'sample.Corners','sample.TrackFire','sample.Fire','sample.VelociRobot','sample.MyFirstRobot')
 
