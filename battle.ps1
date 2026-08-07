@@ -14,6 +14,7 @@ param(
     [int]$Width  = 800,
     [int]$Height = 600,
     [string]$Me  = 'nx.Leviathan*',
+    [string]$Opponent,
     [switch]$Display
 )
 
@@ -32,7 +33,7 @@ $samp = @('sample.Crazy','sample.Tracker','sample.SpinBot','sample.Walls','sampl
 switch ($Preset) {
     'melee16'  { $field = $samp + $spar ; $Width = 1000; $Height = 1000 }
     'melee8'   { $field = ($samp[0..2] + $spar[0..3]) }
-    'duel'     { $field = @('spar.Surfer') }
+    'duel'     { $field = @( $(if ($Opponent) { $Opponent } else { 'spar.Surfer*' }) ) }
     'sparring' { $field = $spar }
     'samples'  { $field = $samp }
 }

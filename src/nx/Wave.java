@@ -33,6 +33,13 @@ public class Wave {
     /** Combinacao de distancia e velocidade lateral no disparo. */
     public int segment;
 
+    /**
+     * GuessFactor que uma mira linear teria escolhido contra o alvo no instante
+     * do disparo. Serve de palpite inicial de perigo enquanto nao ha estatistica
+     * real sobre este atirador.
+     */
+    public double priorGuessFactor;
+
     /** Angulo absoluto que cada canhao virtual teria escolhido. */
     public double[] gunAngles;
 

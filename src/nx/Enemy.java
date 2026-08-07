@@ -54,6 +54,15 @@ public class Enemy {
     public final int[] virtualHits  = new int[Gun.GUN_COUNT];
     public final int[] virtualShots = new int[Gun.GUN_COUNT];
 
+    /**
+     * Onde os tiros DELE nos acertaram, em GuessFactor. E o mapa de perigo que
+     * o wave surfing consulta para decidir para que lado desviar.
+     */
+    public final float[] surfDanger = new float[Gun.BINS];
+
+    /** Posicao no scan anterior: e de la que sai o tiro que detectamos agora. */
+    public Point2D.Double previousPos = new Point2D.Double();
+
     private double previousEnergy = 100.0;
     private double previousHeading;
     private long   previousScanTime = -1;
@@ -85,7 +94,9 @@ public class Enemy {
 
         absBearing = Util.absolute(self.getHeadingRadians() + e.getBearingRadians());
         distance   = e.getDistance();
-        pos        = Util.project(self.myPosition(), absBearing, distance);
+
+        previousPos = pos;
+        pos = Util.project(self.myPosition(), absBearing, distance);
 
         double newHeading = e.getHeadingRadians();
         if (previousScanTime >= 0 && now > previousScanTime) {

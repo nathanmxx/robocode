@@ -54,6 +54,7 @@ public class Leviathan extends AdvancedRobot {
 
     private final Movement movement = new Movement(this);
     private final Gun gun = new Gun(this);
+    private final Surf surf = new Surf(this);
 
     /** Inimigo escolhido como alvo do canhao neste turno. */
     private Enemy target;
@@ -87,11 +88,13 @@ public class Leviathan extends AdvancedRobot {
         }
         movement.newRound();
         gun.newRound();
+        surf.newRound();
 
         while (true) {
             position.setLocation(getX(), getY());
 
             gun.update(getTime());     // ondas que chegaram no alvo viram estatistica
+            surf.update(getTime());    // ondas inimigas que ja passaram sao descartadas
             chooseTarget();
             driveRadar();
             drive();
@@ -111,6 +114,12 @@ public class Leviathan extends AdvancedRobot {
         }
         enemy.update(e, this);
         enemy.detectFiring();
+
+        // Ondas inimigas so em duelo: com a arena cheia, a queda de energia
+        // confunde tiro com colisao e o radar girando deixa os dados velhos.
+        if (isDuel()) {
+            surf.onEnemyFire(enemy);
+        }
     }
 
     public void onRobotDeath(RobotDeathEvent e) {
@@ -134,6 +143,7 @@ public class Leviathan extends AdvancedRobot {
         Enemy enemy = KNOWN.get(e.getName());
         if (enemy != null) {
             enemy.absorbKnownEnergyGain(Util.bulletReward(e.getPower()));
+            surf.onHitByBullet(e, enemy, getTime());
         }
     }
 
@@ -212,12 +222,16 @@ public class Leviathan extends AdvancedRobot {
      * um, nao ha mais para onde fugir e o jogo vira esquiva de tiro.
      */
     private void drive() {
-        List<Enemy> live = liveEnemies();
-        if (getOthers() > 1 || live.size() > 1) {
-            movement.driveMelee(live, getTime());
+        if (isDuel()) {
+            surf.drive(target, getTime());
         } else {
-            movement.driveDuel(target, getTime());
+            movement.driveMelee(liveEnemies(), getTime());
         }
+    }
+
+    /** Sobrou um: acabou a fuga, comeca a esquiva. */
+    boolean isDuel() {
+        return getOthers() <= 1;
     }
 
     // ----------------------------------------------------------------- canhao
