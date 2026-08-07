@@ -1,0 +1,10 @@
+build/
+dist/
+out/
+results/
+*.class
+*.jar
+!tools/robocode-*-setup.jar
+.idea/
+.vscode/
+*.log
