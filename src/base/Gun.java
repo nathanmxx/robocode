@@ -1,4 +1,4 @@
-package tcn;
+package base;
 
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
@@ -38,10 +38,10 @@ public class Gun {
     /** Tiros minimos antes de confiar na taxa de acerto de um canhao virtual. */
     private static final int MIN_SAMPLES = 10;
 
-    private final TCN bot;
+    private final Base bot;
     private final List<Wave> waves = new ArrayList<Wave>();
 
-    public Gun(TCN bot) {
+    public Gun(Base bot) {
         this.bot = bot;
     }
 
@@ -51,9 +51,8 @@ public class Gun {
 
     // ------------------------------------------------------------- segmentacao
 
-    public int segmentOf(Enemy e) {
-        Profile p = bot.profile();
-        int d = e.distance < p.gunNear ? 0 : (e.distance < p.gunFar ? 1 : 2);
+    public static int segmentOf(Enemy e) {
+        int d = e.distance < 250 ? 0 : (e.distance < 550 ? 1 : 2);
         double lateral = Math.abs(e.lateralVelocity);
         int v = lateral < 2.0 ? 0 : (lateral < 5.5 ? 1 : 2);
         return d * 3 + v;
@@ -187,7 +186,7 @@ public class Gun {
     public void update(long now) {
         for (Iterator<Wave> it = waves.iterator(); it.hasNext(); ) {
             Wave w = it.next();
-            Enemy target = TCN.KNOWN.get(w.other);
+            Enemy target = Base.KNOWN.get(w.other);
 
             if (target == null || !target.alive) { it.remove(); continue; }
 

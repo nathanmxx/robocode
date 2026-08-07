@@ -1,4 +1,4 @@
-package tcn;
+package base;
 
 import robocode.AdvancedRobot;
 import robocode.BulletHitBulletEvent;
@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * TCN.
+ * Base.
  *
  * O campeonato e decidido em dois jogos diferentes, e o robo troca de cerebro
  * conforme qual deles esta acontecendo:
@@ -40,7 +40,7 @@ import java.util.Map;
  * vem a vantagem acumulada: na rodada 1 o robo esta chutando, na rodada 5 ja
  * conhece o adversario.
  */
-public class TCN extends AdvancedRobot {
+public class Base extends AdvancedRobot {
 
     /** Sobrevive a batalha inteira. Nao limpar entre rodadas. */
     static final Map<String, Enemy> KNOWN = new HashMap<String, Enemy>();
@@ -56,9 +56,6 @@ public class TCN extends AdvancedRobot {
 
     /** Area onde o movimento pode escolher destinos: recuada da parede. */
     private Rectangle2D.Double safeField;
-
-    /** Ajustes derivados do tamanho da arena e da fase do campeonato. */
-    private Profile profile;
 
     private final Movement movement = new Movement(this);
     private final Gun gun = new Gun(this);
@@ -87,11 +84,7 @@ public class TCN extends AdvancedRobot {
                                        getBattleFieldWidth()  - Util.ROBOT_SIZE,
                                        getBattleFieldHeight() - Util.ROBOT_SIZE);
 
-        // getOthers() no inicio da rodada da a quantidade de adversarios, que e o
-        // que identifica a fase: 15 na Fase 1, 7 na 2, 3 na 3, 1 na final.
-        profile = Profile.forBattle(getBattleFieldWidth(), getBattleFieldHeight(), getOthers());
-
-        double inset = profile.safeInset;
+        double inset = 45;
         safeField = new Rectangle2D.Double(field.x + inset, field.y + inset,
                                            Math.max(field.width  - 2 * inset, 1),
                                            Math.max(field.height - 2 * inset, 1));
@@ -293,12 +286,10 @@ public class TCN extends AdvancedRobot {
         double power;
 
         if (getOthers() > 1) {
-            power = t.distance < profile.gunNear ? 1.9 : 1.2;
+            power = t.distance < 250 ? 1.9 : 1.2;
         } else {
-            power = t.distance < profile.pointBlank ? 3.0
-                  : (t.distance < profile.gunFar ? 2.2 : 1.6);
+            power = t.distance < 200 ? 3.0 : (t.distance < 450 ? 2.2 : 1.6);
         }
-        power *= profile.firePowerScale;
 
         // Nunca gastar mais energia do que sobra com folga.
         power = Math.min(power, getEnergy() / 6.0);
@@ -332,9 +323,5 @@ public class TCN extends AdvancedRobot {
 
     Shield shield() {
         return shield;
-    }
-
-    Profile profile() {
-        return profile;
     }
 }
