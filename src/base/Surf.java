@@ -31,9 +31,6 @@ public class Surf {
     /** Alem disso a simulacao nao vale a pena: a onda ja chegou ou se perdeu. */
     private static final int MAX_SIM_TICKS = 220;
 
-    /** Distancia de orbita perseguida quando nao ha nenhuma onda em voo. */
-    private static final double IDLE_ORBIT_DISTANCE = 420;
-
     private final Base bot;
     private final List<Wave> incoming = new ArrayList<Wave>();
 
@@ -273,7 +270,7 @@ public class Surf {
     private double orbitAngle(Point2D.Double from, Point2D.Double center, int direction) {
         double radialOut = Util.angle(center, from);
         double correction = Util.clamp(-0.6,
-                (IDLE_ORBIT_DISTANCE - from.distance(center)) / 400.0, 0.6);
+                (bot.profile().orbitDistance - from.distance(center)) / 400.0, 0.6);
         return smoothAgainstWalls(from,
                 radialOut + Util.HALF_PI * direction - correction * direction, direction);
     }
@@ -303,7 +300,7 @@ public class Surf {
 
         // absBearing aponta de nos para ele: subtrair a correcao aproxima.
         double correction = Util.clamp(-0.7,
-                (target.distance - IDLE_ORBIT_DISTANCE) / 400.0, 0.7);
+                (target.distance - bot.profile().orbitDistance) / 400.0, 0.7);
         double desired = smoothAgainstWalls(bot.position(),
                 target.absBearing + Util.HALF_PI * idleDirection - correction * idleDirection,
                 idleDirection);

@@ -1,4 +1,4 @@
-package tcn;
+package base;
 
 /**
  * Parametros de ajuste do robo, derivados do tamanho da arena e da fase.
@@ -100,8 +100,8 @@ public class Profile {
         // 0.7 o robo perde 25%, e sobrevive menos, porque o peso de fuga domina
         // a penalidade de canto e ele se encurrala fugindo.
         if (enemies >= 2) {           // Fases 1 a 3: melee
-            survival = 0.7;
-            power    = 1.55;
+            survival = 1.0;
+            power    = 1.0;
         } else {                      // Semifinal e final: duelo
             survival = 1.0;
             power    = 1.0;

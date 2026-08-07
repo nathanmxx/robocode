@@ -51,8 +51,9 @@ public class Gun {
 
     // ------------------------------------------------------------- segmentacao
 
-    public static int segmentOf(Enemy e) {
-        int d = e.distance < 250 ? 0 : (e.distance < 550 ? 1 : 2);
+    public int segmentOf(Enemy e) {
+        Profile p = bot.profile();
+        int d = e.distance < p.gunNear ? 0 : (e.distance < p.gunFar ? 1 : 2);
         double lateral = Math.abs(e.lateralVelocity);
         int v = lateral < 2.0 ? 0 : (lateral < 5.5 ? 1 : 2);
         return d * 3 + v;

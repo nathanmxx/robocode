@@ -22,9 +22,6 @@ public class Movement {
     /** Direcoes testadas em torno da posicao atual. */
     private static final int ANGLE_STEPS = 32;
 
-    /** Distancias testadas. Nada abaixo de ~90 para nao acabar rastejando. */
-    private static final double[] RADII = { 100, 160, 230 };
-
     /**
      * O destino so muda se o novo candidato for sensivelmente melhor. Sem essa
      * histerese o robo fica vibrando entre dois pontos de custo quase igual e
@@ -62,11 +59,12 @@ public class Movement {
 
         Point2D.Double best = null;
         double bestRisk = Double.MAX_VALUE;
+        double[] radii = bot.profile().candidateRadii;
 
         for (int i = 0; i < ANGLE_STEPS; i++) {
             double angle = i * Util.TWO_PI / ANGLE_STEPS;
-            for (int r = 0; r < RADII.length; r++) {
-                Point2D.Double candidate = Util.project(bot.position(), angle, RADII[r]);
+            for (int r = 0; r < radii.length; r++) {
+                Point2D.Double candidate = Util.project(bot.position(), angle, radii[r]);
                 if (!safe.contains(candidate)) continue;
 
                 double risk = riskAt(candidate, live, now);
@@ -97,6 +95,7 @@ public class Movement {
     private double riskAt(Point2D candidate, List<Enemy> live, long now) {
         double risk = 0;
         Point2D.Double here = bot.position();
+        Profile p = bot.profile();
 
         for (int i = 0; i < live.size(); i++) {
             Enemy e = live.get(i);
@@ -107,7 +106,7 @@ public class Movement {
             // 1. Proximidade. Inimigo com muita energia atira mais forte e
             //    aguenta mais, entao pesa mais. O quadrado da distancia faz o
             //    custo explodir de perto, o que na pratica e o anti-ram.
-            double threat = 1.0 + Util.clamp(0, e.energy, 150) / 60.0;
+            double threat = (1.0 + Util.clamp(0, e.energy, 150) / 60.0) * p.survivalBias;
             risk += threat * 12000.0 / (d * d);
 
             // 2. Nao repetir angulo. Se o candidato esta na mesma direcao radial
@@ -136,12 +135,12 @@ public class Movement {
         double wallGap = Math.min(
                 Math.min(candidate.getX() - f.getMinX(), f.getMaxX() - candidate.getX()),
                 Math.min(candidate.getY() - f.getMinY(), f.getMaxY() - candidate.getY()));
-        if (wallGap < 90) risk += (90 - wallGap) * 1.6;
+        if (wallGap < p.wallGap) risk += (p.wallGap - wallGap) * 1.6;
 
         double cornerGap = Math.min(
                 Math.min(dist(candidate, f.getMinX(), f.getMinY()), dist(candidate, f.getMinX(), f.getMaxY())),
                 Math.min(dist(candidate, f.getMaxX(), f.getMinY()), dist(candidate, f.getMaxX(), f.getMaxY())));
-        if (cornerGap < 220) risk += (220 - cornerGap) * 2.2;
+        if (cornerGap < p.cornerGap) risk += (p.cornerGap - cornerGap) * 2.2;
 
         // 5. Custo de deslocamento. Atravessar a arena para chegar num ponto
         //    otimo geralmente significa cruzar a zona de tiro de todo mundo.
