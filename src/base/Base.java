@@ -188,7 +188,19 @@ public class Base extends AdvancedRobot {
 
     // ------------------------------------------------------------------ alvo
 
-    /** Em melee o alvo e o mais proximo; em duelo so ha um. */
+    /**
+     * O alvo e o mais proximo, e so.
+     *
+     * MEDIDO: preferir inimigos com pouca energia perde. Testado pareado em 200
+     * rodadas, ponderar a distancia pela fragilidade do alvo deu 169340 contra
+     * 175587, e 67 rodadas vencidas contra 90.
+     *
+     * O raciocinio que motivou a tentativa estava errado. Cada morte rende 50 de
+     * survival a TODOS que continuam vivos, nao a quem matou - entao terminar um
+     * ferido nao traz nada exclusivo alem dos 20% de bonus, e isso nao paga
+     * girar o canhao para um alvo mais distante e perder taxa de acerto. Alem
+     * disso o mais proximo e tambem o que mais ameaca a gente.
+     */
     private void chooseTarget() {
         Enemy best = null;
         double bestScore = Double.MAX_VALUE;

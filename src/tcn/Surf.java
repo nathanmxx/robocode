@@ -31,6 +31,24 @@ public class Surf {
     /** Alem disso a simulacao nao vale a pena: a onda ja chegou ou se perdeu. */
     private static final int MAX_SIM_TICKS = 220;
 
+    /** Abaixo disso o segmento tem poucos acertos e o global decide. */
+    private static final double SEGMENT_CONFIDENCE = 4.0;
+
+    /** Faixas de distancia e de velocidade lateral, iguais as do canhao. */
+    private int segmentOf(double distance, double lateralVelocity) {
+        Profile p = bot.profile();
+        int d = distance < p.gunNear ? 0 : (distance < p.gunFar ? 1 : 2);
+        double lateral = Math.abs(lateralVelocity);
+        int v = lateral < 2.0 ? 0 : (lateral < 5.5 ? 1 : 2);
+        return d * 3 + v;
+    }
+
+    private static double sum(float[] a) {
+        double t = 0;
+        for (int i = 0; i < a.length; i++) t += a[i];
+        return t;
+    }
+
     private final TCN bot;
     private final List<Wave> incoming = new ArrayList<Wave>();
 
@@ -70,6 +88,10 @@ public class Surf {
         // normalizado pelo sentido de orbita e pela velocidade maxima, a fracao
         // da velocidade lateral e diretamente o GF que ele teria escolhido.
         w.priorGuessFactor = Math.abs(lateral) / Util.MAX_VELOCITY;
+
+        // Situacao em que este tiro foi feito, para o aprendizado nao misturar
+        // tiro de perto com tiro de longe.
+        w.segment = segmentOf(bot.position().distance(w.origin), lateral);
 
         incoming.add(w);
     }
@@ -126,9 +148,12 @@ public class Surf {
         int bin = binOf(matched.guessFactor(hitAt));
 
         // Um acerto condena o bin exato e, cada vez menos, a vizinhanca: se ele
-        // acertou aqui, chegar perto daqui de novo tambem e arriscado.
+        // acertou aqui, chegar perto daqui de novo tambem e arriscado. Registra
+        // no segmento daquele tiro e tambem no global.
         for (int i = 0; i < Gun.BINS; i++) {
-            shooter.surfDanger[i] += (float) (1.0 / (1.0 + (i - bin) * (i - bin)));
+            float weight = (float) (1.0 / (1.0 + (i - bin) * (i - bin)));
+            shooter.surfSegments[matched.segment][i] += weight;
+            shooter.surfGlobal[i] += weight;
         }
         incoming.remove(matched);
     }
@@ -169,10 +194,16 @@ public class Surf {
 
         int bin = binOf(wave.guessFactor(landing));
 
-        double total = 0;
-        for (int i = 0; i < Gun.BINS; i++) total += target.surfDanger[i];
+        // Primeiro o segmento desta situacao; se ainda tem poucos acertos ali,
+        // cai no global, que aprende mais rapido por juntar tudo.
+        float[] stats = target.surfSegments[wave.segment];
+        double total = sum(stats);
+        if (total < SEGMENT_CONFIDENCE) {
+            stats = target.surfGlobal;
+            total = sum(stats);
+        }
 
-        double learned = total > 0 ? target.surfDanger[bin] / total : 0;
+        double learned = total > 0 ? stats[bin] / total : 0;
 
         // A confianca na estatistica cresce com os acertos observados. Ate la
         // vale o palpite: a maioria dos robos mira direto ou linear.

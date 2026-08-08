@@ -57,6 +57,10 @@ $javaArgs = @(
     'robocode.Robocode'
 ) + $args
 
+# O Robocode chama 'javac' pelo PATH ao subir. Como a JVM escolhida acima e de um
+# JDK, basta colocar o bin dela na frente do PATH deste processo.
+$env:PATH = (Split-Path $java) + ';' + $env:PATH
+
 Push-Location $RobocodeHome
 try { & $java @javaArgs }
 finally { Pop-Location }

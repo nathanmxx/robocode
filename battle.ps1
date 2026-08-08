@@ -108,6 +108,19 @@ if ($Display) {
     $javaArgs += '-nodisplay', '-tps', '10000'
 }
 
+# Ao subir a interface, o Robocode chama 'javac' pelo PATH. Se a maquina so tem
+# JRE, ele falha com "Cannot run program javac" antes mesmo de abrir a janela.
+# Prefixar um JDK no PATH deste processo resolve sem mexer no PATH do sistema.
+$jdkBin = Join-Path $RobocodeHome 'jdk\bin'
+if (-not (Test-Path (Join-Path $jdkBin 'javac.exe'))) {
+    $found = Get-ChildItem 'C:\Program Files\Java','C:\Program Files\Eclipse Adoptium',
+                           'C:\Program Files\JetBrains' `
+               -Filter 'javac.exe' -Recurse -Depth 5 -ErrorAction SilentlyContinue |
+             Select-Object -First 1
+    if ($found) { $jdkBin = $found.Directory.FullName }
+}
+if (Test-Path (Join-Path $jdkBin 'javac.exe')) { $env:PATH = "$jdkBin;$env:PATH" }
+
 Push-Location $RobocodeHome
 try { & java @javaArgs 2>&1 | Where-Object { $_ -match 'SYSTEM|Exception|Error|error' } | Select-Object -First 20 }
 finally { Pop-Location }
@@ -119,6 +132,10 @@ if (Test-Path $resultsFile) {
         elseif ($_ -match '^\s*Rank') { Write-Host $_ -ForegroundColor DarkGray }
         else   { Write-Host $_ }
     }
+} elseif ($Display) {
+    # Em modo visual o Robocode mantem a janela aberta depois da batalha e so
+    # grava o placar ao ser fechado. Ausencia de resultado aqui e normal.
+    Write-Host 'Feche a janela do Robocode para encerrar.' -ForegroundColor DarkGray
 } else {
     Write-Warning "sem arquivo de resultados - a batalha falhou"
 }

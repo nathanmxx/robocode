@@ -188,8 +188,8 @@ public class Shield {
         int best = Gun.CENTER;
         float bestValue = 0;
         for (int i = 0; i < Gun.BINS; i++) {
-            if (shooter.surfDanger[i] > bestValue) {
-                bestValue = shooter.surfDanger[i];
+            if (shooter.surfGlobal[i] > bestValue) {
+                bestValue = shooter.surfGlobal[i];
                 best = i;
             }
         }

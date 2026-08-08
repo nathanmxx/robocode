@@ -57,8 +57,15 @@ public class Enemy {
     /**
      * Onde os tiros DELE nos acertaram, em GuessFactor. E o mapa de perigo que
      * o wave surfing consulta para decidir para que lado desviar.
+     *
+     * Segmentado pela mesma logica do canhao: um robo nao mira igual de perto e
+     * de longe, nem contra alvo parado e alvo em velocidade. Misturar tudo num
+     * histograma so faz a media de situacoes diferentes e borra justamente o
+     * pico que interessa. O global fica ao lado como rede de seguranca enquanto
+     * o segmento tem poucos acertos registrados.
      */
-    public final float[] surfDanger = new float[Gun.BINS];
+    public final float[][] surfSegments = new float[Gun.SEGMENTS][Gun.BINS];
+    public final float[]   surfGlobal   = new float[Gun.BINS];
 
     /** Posicao no scan anterior: e de la que sai o tiro que detectamos agora. */
     public Point2D.Double previousPos = new Point2D.Double();
