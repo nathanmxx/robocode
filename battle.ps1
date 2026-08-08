@@ -122,8 +122,15 @@ if (-not (Test-Path (Join-Path $jdkBin 'javac.exe'))) {
 if (Test-Path (Join-Path $jdkBin 'javac.exe')) { $env:PATH = "$jdkBin;$env:PATH" }
 
 Push-Location $RobocodeHome
-try { & java @javaArgs 2>&1 | Where-Object { $_ -match 'SYSTEM|Exception|Error|error' } | Select-Object -First 20 }
-finally { Pop-Location }
+
+# 'Stop' volta a 'Continue' apenas aqui. No PowerShell 5.1, redirecionar o stderr
+# de um executavel nativo transforma CADA linha em ErrorRecord - entao um aviso
+# inofensivo da JVM ("System::setSecurityManager esta obsoleto", que o Java 21
+# imprime e o 8 nao) abortava o script no meio da batalha.
+$previousPreference = $ErrorActionPreference
+$ErrorActionPreference = 'Continue'
+try   { & java @javaArgs 2>&1 | Where-Object { $_ -match 'SYSTEM|Exception' } | Select-Object -First 20 }
+finally { $ErrorActionPreference = $previousPreference; Pop-Location }
 
 if (Test-Path $resultsFile) {
     Write-Host ''

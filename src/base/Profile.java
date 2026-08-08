@@ -68,7 +68,7 @@ public class Profile {
         this.wallGap    = 90  * scale;
         this.cornerGap  = 220 * scale;
         this.safeInset  = Math.max(25, 45 * scale);
-        this.orbitDistance = 540 * scale;
+        this.orbitDistance = 700 * scale;
         this.gunNear    = 250 * scale;
         this.gunFar     = 550 * scale;
         this.pointBlank = 200 * scale;
