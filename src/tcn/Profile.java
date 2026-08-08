@@ -68,7 +68,7 @@ public class Profile {
         this.wallGap    = 90  * scale;
         this.cornerGap  = 220 * scale;
         this.safeInset  = Math.max(25, 45 * scale);
-        this.orbitDistance = 420 * scale;
+        this.orbitDistance = 540 * scale;
         this.gunNear    = 250 * scale;
         this.gunFar     = 550 * scale;
         this.pointBlank = 200 * scale;
@@ -104,7 +104,7 @@ public class Profile {
             power    = 1.55;
         } else {                      // Semifinal e final: duelo
             survival = 1.0;
-            power    = 1.55;
+            power    = 1.0;
         }
         return new Profile(width, height, survival, power);
     }
