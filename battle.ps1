@@ -16,6 +16,9 @@ param(
     [string]$Me  = 'tcn.TCN*',
     [string]$Opponent,
     [switch]$Display,
+    # Turnos por segundo no modo visual. 30 da para acompanhar; 10 mostra a
+    # esquiva tiro a tiro; acima de 60 vira borrao.
+    [int]$Tps = 30,
     # Coloca a versao de referencia (base.Base) na mesma arena. Comparacao
     # pareada: as duas versoes enfrentam exatamente as mesmas rodadas e os mesmos
     # sorteios de posicao, o que elimina a variancia que torna amostras isoladas
@@ -86,14 +89,24 @@ $javaArgs = @(
     '-Xmx1024M'
     '-XX:+IgnoreUnrecognizedVMOptions'
     '-Djava.security.manager=allow'
-    '-Djava.awt.headless=true'
     '--add-opens=java.base/sun.net.www.protocol.jar=ALL-UNNAMED'
     '--add-opens=java.base/java.lang.reflect=ALL-UNNAMED'
+    '--add-opens=java.desktop/javax.swing.text=ALL-UNNAMED'
+    '--add-opens=java.desktop/sun.awt=ALL-UNNAMED'
     'robocode.Robocode'
     '-battle', $battleFile
     '-results', $resultsFile
 )
-if (-not $Display) { $javaArgs += '-nodisplay' ; $javaArgs += '-tps' ; $javaArgs += '10000' }
+
+if ($Display) {
+    # Velocidade de quem esta assistindo, nao de quem esta medindo.
+    $javaArgs += '-tps', "$Tps"
+} else {
+    # headless so aqui: passar isso junto com -Display fazia o Robocode
+    # responder "Disabled GUI on headless system" e a janela nunca abrir.
+    $javaArgs = @('-Djava.awt.headless=true') + $javaArgs
+    $javaArgs += '-nodisplay', '-tps', '10000'
+}
 
 Push-Location $RobocodeHome
 try { & java @javaArgs 2>&1 | Where-Object { $_ -match 'SYSTEM|Exception|Error|error' } | Select-Object -First 20 }
