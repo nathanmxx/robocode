@@ -20,7 +20,11 @@ param(
     # pareada: as duas versoes enfrentam exatamente as mesmas rodadas e os mesmos
     # sorteios de posicao, o que elimina a variancia que torna amostras isoladas
     # de melee inconclusivas.
-    [switch]$Paired
+    [switch]$Paired,
+    # Contra qual versao medir. 'base.Base*' e a geracao anterior (alvo movel,
+    # para A/B de uma mudanca isolada); 'lev.Leviathan*' e a geracao 1 congelada,
+    # que serve de regua estavel ao longo de todas as mudancas.
+    [string]$Reference = 'base.Base*'
 )
 
 $ErrorActionPreference = 'Stop'
@@ -53,7 +57,7 @@ switch ($Preset) {
 if ($Paired) {
     # Entra no lugar de um adversario, para o total de robos na arena continuar
     # igual ao da fase que estamos simulando.
-    $field = @('base.Base*') + $field[1..($field.Count - 1)]
+    $field = @($Reference) + $field[1..($field.Count - 1)]
 }
 
 $robots = (@($Me) + $field) -join ','
