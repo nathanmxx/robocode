@@ -104,7 +104,7 @@ public class Profile {
             power    = 1.55;
         } else {                      // Semifinal e final: duelo
             survival = 1.0;
-            power    = 1.0;
+            power    = 1.55;
         }
         return new Profile(width, height, survival, power);
     }

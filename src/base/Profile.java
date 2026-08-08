@@ -100,8 +100,8 @@ public class Profile {
         // 0.7 o robo perde 25%, e sobrevive menos, porque o peso de fuga domina
         // a penalidade de canto e ele se encurrala fugindo.
         if (enemies >= 2) {           // Fases 1 a 3: melee
-            survival = 1.0;
-            power    = 1.0;
+            survival = 0.7;
+            power    = 1.55;
         } else {                      // Semifinal e final: duelo
             survival = 1.0;
             power    = 1.0;
