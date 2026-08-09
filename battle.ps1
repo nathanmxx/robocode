@@ -39,8 +39,14 @@ $RobocodeHome = 'C:\robocode'
 # robos sao "development robots" para o Robocode, e o nome oficial deles leva
 # asterisco. Sem ele o motor responde "Can't find".
 $spar = @('spar.Hunter*','spar.Circler*','spar.Surfer*','spar.Rammer*','spar.Sniper*')
+
+# teste.T67 e um COMPETIDOR REAL, publicado pelo autor em
+# github.com/thales-biondi12/Robocode. Entra no lugar do sample.MyFirstRobot, que
+# era o mais fraco da lista: adversario de verdade vale mais que bot de exemplo.
+# Isso muda a linha de base do melee - numeros anteriores a esta troca nao sao
+# comparaveis com os de agora.
 $samp = @('sample.Crazy','sample.Tracker','sample.SpinBot','sample.Walls','sample.RamFire',
-          'sample.Corners','sample.TrackFire','sample.Fire','sample.VelociRobot','sample.MyFirstRobot')
+          'sample.Corners','sample.TrackFire','sample.Fire','sample.VelociRobot','teste.T67*')
 
 # O preset so define o tamanho padrao da arena; -Width/-Height explicitos mandam.
 # Isso e o que permite varrer a mesma fase em varias arenas, ja que o regulamento
