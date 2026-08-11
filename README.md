@@ -8,7 +8,13 @@ O campeonato não premia quem mata mais, premia quem **não morre cedo**. Em uma
 de 16 robôs onde só metade avança, o TCN trata sobrevivência como objetivo primário e
 dano como secundário — e inverte essa prioridade sozinho quando a arena esvazia e vira duelo.
 
-## Formato do campeonato (do regulamento)
+## Condições confirmadas pela comissão
+
+- **Arena 800x600**, todas as configurações padrão do Robocode (pode aumentar um pouco).
+- **Entrega: apenas o código-fonte**, colado no editor pelo juiz. Nada de `.jar`.
+- **Sem acesso** aos robôs das outras equipes.
+
+## Formato do campeonato
 
 | Fase | Robôs na arena | Rodadas | Corte |
 |------|----------------|---------|-------|
@@ -17,92 +23,60 @@ dano como secundário — e inverte essa prioridade sozinho quando a arena esvaz
 | 3 | 4 | 5 | metade avança |
 | Semi / Final | 2 | 10 | pontuação direta |
 
-Consequência de projeto: o robô precisa ser **excelente em melee** (fases 1–3) e
-**excelente em duelo** (semifinal e final). São dois problemas diferentes, então o TCN
-carrega dois cérebros e troca conforme o número de inimigos vivos (`getOthers()`).
+O robô carrega dois cérebros e troca conforme o número de inimigos vivos (`getOthers()`).
+
+## Resultados medidos
+
+Sempre na condição real do regulamento: 20 batalhas independentes por fase,
+5 rodadas (10 na final), arena 800x600.
+
+| Fase | 1º lugar | Classifica | Pior colocação |
+|---|---|---|---|
+| Fase 1 (16 robôs) | 18/20 (90%) | 20/20 (100%) | 2º |
+| Fase 2 (8 robôs) | 20/20 (100%) | 20/20 | 1º |
+| Fase 3 (4 robôs) | 20/20 (100%) | 20/20 | 1º |
+| Final vs `T67` (competidor real) | 20/20 (100%) | — | 1º |
+| Final vs geração 1 congelada | 18/20 (90%) | — | 2º |
+
+Turnos perdidos: **zero** (30 numa rodada desclassificam).
+
+### Como medir sem se enganar
+
+**O erro mais caro do projeto:** todo o ajuste do duelo foi validado em batalhas de
+400 rodadas, mas o campeonato tem 5 e 10. O robô aprende entre rodadas — mapa de
+perigo e estatísticas de mira se acumulam — então em 400 rodadas ele fica imbatível
+e em 10 mal saiu do palpite inicial. Resultado: o robô **perdia** 13 a 17 na condição
+real enquanto "vencia" 256 a 144 na condição de teste.
+
+A regra que ficou: **muitas batalhas curtas, nunca uma batalha longa.** É o que o
+`bench.ps1` faz.
+
+Corolário prático: defesas que funcionam **desde o primeiro turno** valem mais que
+defesas que precisam aprender. Foi assim que a distância de órbita virou o ajuste
+mais importante do duelo (de 374px para 485px levou o placar de 13-17 para 27-3).
 
 ## Como funciona
 
 | Peça | Arquivo | O que faz |
 |---|---|---|
-| Campo de risco | `Movement.java` | Espalha 96 pontos candidatos e vai para o de menor custo. O custo pune proximidade, repetir ângulo, fogo cruzado e cantos. |
-| Canhão | `Gun.java` | Quatro miras em paralelo (direta, linear, circular, GuessFactor). Mede qual acerta cada inimigo e usa a vencedora contra ele. |
-| Wave surfing | `Surf.java` | Simula a física do próprio robô nos dois sentidos de órbita e desvia para onde aquele atirador menos acerta. |
-| Defesa por projétil | `Shield.java` | Sombra e interceptação. **Desligadas por padrão** — ver abaixo. |
+| Campo de risco | `Movement.java` | Espalha 96 pontos candidatos e vai para o de menor custo. Pune proximidade, repetir ângulo, fogo cruzado e cantos. |
+| Canhão | `Gun.java` | Quatro miras em paralelo (direta, linear, circular, GuessFactor). Mede qual acerta cada inimigo e usa a vencedora. |
+| Wave surfing | `Surf.java` | Simula a física do próprio robô nos dois sentidos e desvia para onde aquele atirador menos acerta. Mapa de perigo segmentado em 9 faixas. |
+| Defesa por projétil | `Shield.java` | Sombra e interceptação. **Desligadas** — ver abaixo. |
 
-O que aprende sobrevive entre rodadas: o Robocode recria a instância a cada rodada mas
-mantém o classloader durante a batalha, então campos estáticos atravessam as 5 (ou 10)
-rodadas. Na rodada 1 o robô chuta; na rodada 5 já conhece o adversário.
+## Hipóteses testadas e rejeitadas
 
-## Resultados medidos
+Registradas porque saber o que **não** funciona vale tanto quanto o que funciona.
 
-Adversários: 10 sample bots + 5 arquétipos de treino em `src/spar/`.
-
-| Cenário | Resultado |
+| Ideia | Resultado |
 |---|---|
-| Melee 16 (800x600) | 1º lugar, 98298 pts contra 65902 do melhor adversário, 51 de 100 rodadas vencidas |
-| Melee 8 (Fase 2) | 1º lugar, 22% da pontuação total (fatia uniforme seria 12,5%) |
-| Melee 4 (Fase 3) | 1º lugar, 38% da pontuação (uniforme: 25%) |
-| Duelo vs cada arquétipo | 30–0, entre 90% e 94% da pontuação |
-| Turnos perdidos | 0 (30 turnos perdidos numa rodada desclassifica) |
-
-### Como medir sem se enganar
-
-Uma rodada isolada de melee com 16 robôs varia de 24k a 33k pontos. **Amostra
-isolada não decide nada** — cheguei a comemorar um ganho de 24284→30055 que a
-segunda amostra desmentiu (24186).
-
-Por isso `src/base/` carrega uma cópia do robô com outro ajuste, e
-`battle.ps1 -Paired` coloca as duas versões **na mesma arena, nas mesmas rodadas**.
-Mesmo assim o piso de ruído é ~5%: diferenças menores que isso não são reais.
-
-### O achado que derrubou a premissa do projeto
-
-O robô nasceu da ideia de que, em melee, sobrevivência vem primeiro e economizar
-tiro é economizar vida. **Medido, isso está errado.** Varredura do par
-(peso de fuga / potência), pareada, 100 rodadas por célula:
-
-| Perfil | vs. neutro |
-|---|---|
-| 1.5 / 0.70 (medroso) | −25% |
-| 1.0 / 1.00 (neutro) | — |
-| 0.8 / 1.25 | +17% |
-| **0.7 / 1.55** | **+27%** ← adotado |
-| 0.6 / 1.90 | empate, dentro do ruído |
-
-Atirar mais sobrevive mais porque acertar devolve 3× a potência em energia e
-inimigo morto para de atirar. E o perfil medroso morre *mais*: com o peso de fuga
-alto, a penalidade de canto fica relativamente fraca e o robô se encurrala fugindo.
-
-### Por que um jar só, e não uma versão por fase
-
-O mesmo perfil agressivo venceu nas três fases de melee com margem parecida
-(+37% / +20% / +24%). Não há evidência de que separar Fase 1, 2 e 3 em ajustes
-diferentes ajude, e o piso de ruído é maior que qualquer diferença plausível entre
-elas. Sobram dois regimes — melee e duelo — que o robô escolhe sozinho por
-`getOthers()`. Um arquivo só, sem risco de carregar o errado sob os 5 minutos de
-ajuste do regulamento (§3.4: nada pode ser alterado depois do carregamento).
-
-## Sobre o parry
-
-Projéteis se destroem ao se cruzar no Robocode, e as duas defesas estão implementadas e
-funcionam. Mas foram medidas e **custam mais do que rendem**:
-
-| Configuração | Dano recebido (4 duelos × 30 rodadas) | % da pontuação |
-|---|---|---|
-| **Nenhuma** | **1433** | **92,5%** |
-| Só interceptação | 1632 | 91,5% |
-| Só sombra | 1910 | 90,5% |
-| As duas | 1865 | 90,8% |
-
-Dois motivos: o canhão é recurso único (interceptar custa ~10 turnos sem revidar, para
-bloquear um tiro que o surfing já desviaria em ~85% das vezes), e projétil é um ponto —
-a colisão exige alinhamento quase exato, e o erro da simulação faz a sombra marcar como
-seguro um setor que não está.
-
-Ficam atrás de `USE_BULLET_SHADOW` e `USE_ACTIVE_PARRY` em `TCN.java`. Deram lucro contra
-os dois arquétipos mais agressivos (Hunter 401→320, Sniper 495→427), então valem
-reavaliação se o adversário for preciso a ponto de furar a esquiva.
+| Parry ativo (abater o projétil no ar) | 16/20 contra 18/20. Rejeitado também na condição curta. |
+| Sombra de projétil | 16/20 contra 18/20. |
+| Parar no wave surfing (3ª opção) | 35/65 contra a versão sem. Entrega o robô para mira direta. |
+| Alvo por fragilidade em vez de proximidade | 67 rodadas contra 90. Os 50 pontos de survival vão para todos os vivos, não para quem matou. |
+| Baixar `MIN_SAMPLES` dos canhões virtuais | 17/20 contra 19/20. Com 4 amostras a taxa de acerto é ruído. |
+| Perfil "sobrevivência máxima" no melee | −25%, e sobrevive *menos* — o peso de fuga encurrala o robô. |
+| Raios de movimento maiores ou menores | Empate dentro do ruído nos dois sentidos. |
 
 ## Como buildar
 
@@ -110,42 +84,42 @@ reavaliação se o adversário for preciso a ponto de furar a esquiva.
 .\build.ps1
 ```
 
-Compila `src/`, instala as classes em `C:\robocode\robots\tcn` (o robô já aparece na lista
-ao abrir o Robocode), gera `dist/tcn.jar` e a versão de arquivo único `dist/TCN.java`.
+Compila, instala em `C:\robocode\robots\tcn`, e gera `dist/TCN.java` — o **arquivo
+único sem declaração de pacote**, que é o entregável.
 
-O bytecode tem alvo **Java 8** de propósito: o `.class` carrega em qualquer JVM 8+, então
-o robô funciona na máquina oficial seja qual for a versão de Java instalada lá.
-
-## Como testar
+## Como medir
 
 ```powershell
-.\battle.ps1 -Preset melee16 -Rounds 30
-.\battle.ps1 -Preset duel -Rounds 30 -Opponent 'spar.Surfer*'
+.\bench.ps1 -Preset melee16 -Battles 20
 ```
 
-Batalhas sem interface (bem mais rápido). Use `-Display` para assistir.
+Roda 20 batalhas independentes de 5 rodadas e reporta taxa de 1º lugar e de
+classificação. Use `-Preset duel -Rounds 10` para a final.
+
+Para assistir: `.\battle.ps1 -Preset melee16 -Rounds 3 -Display`
+
+## Entrega no dia
+
+Levar o conteúdo de **`dist/TCN.java`**. É um arquivo único, sem `package`, com todas
+as classes dentro — o juiz cola no editor do Robocode, salva como `TCN.java` e compila.
+Testado de ponta a ponta.
+
+Se o editor do Robocode reclamar de compilador na máquina do evento, o `fix-compiler.ps1`
+resolve (o erro acontece quando a máquina só tem JRE, que não traz `javac`).
 
 ## Estrutura
 
 ```
 src/tcn/    robô de competição
-src/spar/   bots de treino — arquétipos do que os adversários provavelmente vão usar
+src/lev/    geração 1 congelada — régua fixa de comparação
+src/base/   cópia para A/B pareado
+src/spar/   5 arquétipos de adversário
+src/teste/  T67, competidor real (github.com/thales-biondi12/Robocode)
 docs/       regulamento e manual
-build.ps1   compila, instala, empacota
-battle.ps1  roda batalhas headless
 ```
 
-## Entrega no dia
+## Limitação conhecida
 
-Carregar `dist/tcn.jar` na máquina oficial. Em `.jar` o robô aparece como `tcn.TCN`;
-solto como `.class` apareceria como `tcn.TCN*` (o asterisco marca *development robot*).
-
-Alternativa sem estrutura de pastas: `dist/TCN.java` é o robô inteiro em um arquivo só,
-para colar direto no editor do Robocode.
-
-## Em aberto
-
-Três parâmetros de batalha não constam em nenhum documento e mudam o ajuste — vale
-confirmar com a comissão: **tamanho da arena** (o padrão do Robocode é 800x600, e 16 robôs
-nesse tamanho é um aperto bem diferente de 1000x1000), **gun cooling rate** (padrão 0.1) e
-**inactivity time** (padrão 450).
+O `T67` é o **único** competidor real no conjunto de teste. Os outros adversários são
+arquétipos que eu mesmo escrevi. Um oponente com mira preditiva seria mais perigoso
+que qualquer coisa contra a qual o robô foi calibrado.
