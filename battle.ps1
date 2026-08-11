@@ -38,7 +38,8 @@ $RobocodeHome = 'C:\robocode'
 # O sufixo '*' e obrigatorio: robos carregados como .class solto no diretorio de
 # robos sao "development robots" para o Robocode, e o nome oficial deles leva
 # asterisco. Sem ele o motor responde "Can't find".
-$spar = @('spar.Hunter*','spar.Circler*','spar.Surfer*','spar.Rammer*','spar.Sniper*','spar.WallsPro*')
+$spar = @('spar.Hunter*','spar.Circler*','spar.Surfer*','spar.Rammer*','spar.Sniper*',
+          'spar.WallsPro*')
 
 # teste.T67 e um COMPETIDOR REAL, publicado pelo autor em
 # github.com/thales-biondi12/Robocode. Entra no lugar do sample.MyFirstRobot, que
@@ -63,9 +64,9 @@ switch ($Preset) {
     # quem chega la e quem sobreviveu a fase anterior. Antes estes presets usavam
     # os mais fracos, o que tornava as fases seguintes mais faceis que a Fase 1 -
     # o oposto do funil real do campeonato.
-    'melee8'   { $field = @('teste.T67*','sample.Walls','sample.SpinBot','sample.Tracker',
+    'melee8'   { $field = @('teste.T67*','spar.WallsPro*','sample.Walls','sample.SpinBot',
                             'spar.Hunter*','spar.Surfer*','spar.Circler*') }
-    'melee4'   { $field = @('teste.T67*','sample.Walls','spar.Hunter*') }
+    'melee4'   { $field = @('teste.T67*','spar.WallsPro*','spar.Surfer*') }
     'duel'     { $field = @( $(if ($Opponent) { $Opponent } else { 'spar.Surfer*' }) ) }
     'sparring' { $field = $spar }
     'samples'  { $field = $samp }
