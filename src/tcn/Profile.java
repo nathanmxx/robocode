@@ -101,7 +101,7 @@ public class Profile {
         // a penalidade de canto e ele se encurrala fugindo.
         if (enemies >= 2) {           // Fases 1 a 3: melee
             survival = 0.7;
-            power    = 1.55;
+            power    = 1.9;
         } else {                      // Semifinal e final: duelo
             survival = 1.0;
             power    = 0.8;

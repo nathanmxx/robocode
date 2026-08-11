@@ -56,8 +56,13 @@ $explicitSize = $PSBoundParameters.ContainsKey('Width') -or $PSBoundParameters.C
 switch ($Preset) {
     'melee16'  { $field = $samp + $spar
                  if (-not $explicitSize) { $Width = 1000; $Height = 1000 } }
-    'melee8'   { $field = ($samp[0..2] + $spar[0..3]) }
-    'melee4'   { $field = ($samp[0..0] + $spar[0..1]) }
+    # Fases 2 e 3 recebem os adversarios MAIS FORTES, nao os primeiros da lista:
+    # quem chega la e quem sobreviveu a fase anterior. Antes estes presets usavam
+    # os mais fracos, o que tornava as fases seguintes mais faceis que a Fase 1 -
+    # o oposto do funil real do campeonato.
+    'melee8'   { $field = @('teste.T67*','sample.Walls','sample.SpinBot','sample.Tracker',
+                            'spar.Hunter*','spar.Surfer*','spar.Circler*') }
+    'melee4'   { $field = @('teste.T67*','sample.Walls','spar.Hunter*') }
     'duel'     { $field = @( $(if ($Opponent) { $Opponent } else { 'spar.Surfer*' }) ) }
     'sparring' { $field = $spar }
     'samples'  { $field = $samp }

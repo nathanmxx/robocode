@@ -120,9 +120,12 @@ $ordered = Get-ChildItem $pkgSrc -Filter '*.java' |
 $imports = $ordered | ForEach-Object { Get-Content $_.FullName } |
            Where-Object { $_ -match '^import ' } | Sort-Object -Unique
 
+# SEM declaracao de pacote, de proposito. A entrega no dia e o codigo-fonte
+# colado no editor do Robocode pelo proprio juiz: sem pacote ele salva o arquivo
+# direto e compila, enquanto "package tcn;" exigiria criar a pasta tcn antes -
+# um passo a mais para dar errado com 5 minutos no relogio. Testado: o robo sem
+# pacote aparece como "TCN" e funciona igual.
 $out = New-Object System.Text.StringBuilder
-[void]$out.AppendLine("package $Package;")
-[void]$out.AppendLine()
 foreach ($i in $imports) { [void]$out.AppendLine($i) }
 
 foreach ($f in $ordered) {
