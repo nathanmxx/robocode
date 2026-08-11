@@ -34,6 +34,12 @@ public class Surf {
     /** Abaixo disso o segmento tem poucos acertos e o global decide. */
     private static final double SEGMENT_CONFIDENCE = 4.0;
 
+    /** Quantas ondas entram na decisao de para que lado desviar. */
+    private static final int WAVES_CONSIDERED = 2;
+
+    /** Peso da onda seguinte em relacao a anterior. */
+    private static final double NEXT_WAVE_WEIGHT = 0.20;
+
     /** Faixas de distancia e de velocidade lateral, iguais as do canhao. */
     private int segmentOf(double distance, double lateralVelocity) {
         Profile p = bot.profile();
@@ -108,19 +114,34 @@ public class Surf {
 
     /** Onda mais iminente: a que esta mais perto de nos alcancar. */
     public Wave closestWave(long now) {
-        Wave best = null;
-        double bestGap = Double.MAX_VALUE;
+        List<Wave> ordered = wavesByImminence(now, 1);
+        return ordered.isEmpty() ? null : ordered.get(0);
+    }
+
+    /**
+     * As ondas ainda por chegar, da mais iminente para a mais distante.
+     *
+     * Existe porque desviar so da primeira e miopia: com a orbita a ~485px e o
+     * inimigo recarregando a cada ~14 turnos, ha 2 ou 3 projeteis no ar ao mesmo
+     * tempo. Fugir do primeiro pode ser entrar na frente do segundo.
+     */
+    private List<Wave> wavesByImminence(long now, int limit) {
+        List<Wave> out = new ArrayList<Wave>();
+        List<Double> gaps = new ArrayList<Double>();
         Point2D.Double me = bot.position();
 
         for (int i = 0; i < incoming.size(); i++) {
             Wave w = incoming.get(i);
             double gap = me.distance(w.origin) - w.radius(now);
-            if (gap > -10 && gap < bestGap) {
-                bestGap = gap;
-                best = w;
-            }
+            if (gap <= -10) continue;                  // ja passou
+
+            int at = 0;
+            while (at < gaps.size() && gaps.get(at) < gap) at++;
+            gaps.add(at, gap);
+            out.add(at, w);
         }
-        return best;
+        while (out.size() > limit) out.remove(out.size() - 1);
+        return out;
     }
 
     // ------------------------------------------------------------------ aprender
@@ -161,12 +182,13 @@ public class Surf {
     // ------------------------------------------------------------------ dirigir
 
     public void drive(Enemy target, long now) {
-        Wave wave = closestWave(now);
+        List<Wave> waves = wavesByImminence(now, WAVES_CONSIDERED);
 
-        if (wave == null || target == null) {
+        if (waves.isEmpty() || target == null) {
             orbit(target, now);
             return;
         }
+        Wave wave = waves.get(0);
 
         // Trechos da onda cobertos por projeteis nossos: la ele nao acerta,
         // porque o tiro dele bateria no nosso antes.
@@ -174,8 +196,17 @@ public class Surf {
                 ? bot.shield().shadows(wave, now)
                 : java.util.Collections.<double[]>emptyList();
 
-        double dangerLeft  = dangerOf(wave, -1, now, target, shadows);
-        double dangerRight = dangerOf(wave, +1, now, target, shadows);
+        // Soma o perigo das proximas ondas, com peso decrescente: a que chega
+        // primeiro manda, mas a seguinte tem voto. Sem isso o robo desvia de uma
+        // e entra na outra, e o erro so aparece um segundo depois.
+        double dangerLeft = 0, dangerRight = 0, weight = 1.0;
+        for (int i = 0; i < waves.size(); i++) {
+            Wave w = waves.get(i);
+            List<double[]> s = (i == 0) ? shadows : java.util.Collections.<double[]>emptyList();
+            dangerLeft  += weight * dangerOf(w, -1, now, target, s);
+            dangerRight += weight * dangerOf(w, +1, now, target, s);
+            weight *= NEXT_WAVE_WEIGHT;
+        }
 
         int direction = dangerLeft < dangerRight ? -1 : +1;
         steerAround(wave.origin, direction);
