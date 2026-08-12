@@ -143,6 +143,15 @@ vai, mas entrega você de bandeja para a mira direta. Perdeu feio.
 matar dá bônus, só que girar o canhão para longe custa mais pontaria do que o
 bônus paga.
 
+**Desviar de tiro na arena cheia.** Essa era a que eu mais achava que ia dar
+certo, porque na arena cheia o robô só evita posições ruins e nunca reage a um
+tiro específico. Fiz cada ponto candidato pagar também pelos projéteis que
+estivessem indo naquela direção. Com peso baixo não mudou nada, e com peso alto
+o robô ficou fugindo de tiro para dentro de lugares piores e caiu de 24 para 19
+primeiros lugares em 30. Parece que com muita gente atirando ao mesmo tempo,
+escolher bem a posição já resolve, e reagir a cada tiro atrapalha mais do que
+ajuda.
+
 ## Documentação
 
 * [Regulamento](docs/Regulamento_Robocode.pdf), com as fases e a pontuação
