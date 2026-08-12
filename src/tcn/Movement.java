@@ -34,6 +34,45 @@ public class Movement {
     private Point2D.Double destination;
     private double destinationRisk = Double.MAX_VALUE;
 
+    // ------------------------------------------------------ area de trabalho
+    // Reaproveitadas a cada turno em vez de realocadas. O calculo de risco roda
+    // 96 vezes por turno, uma para cada ponto candidato, e com 15 inimigos vivos
+    // qualquer alocacao la dentro vira 1400 objetos por turno.
+    //
+    // Isso nao e microotimizacao por esporte: o Robocode da um orcamento de
+    // tempo por turno e desclassifica quem estourar 30 vezes numa rodada. A
+    // maquina do evento e desconhecida, entao o que importa aqui e a margem.
+    private int    cachedCount;
+    private double[] enemyX  = new double[8];
+    private double[] enemyY  = new double[8];
+    private double[] threat  = new double[8];
+    private double[] angleToUs = new double[8];   // do inimigo ate a nossa posicao
+    private double[] angleToCandidate = new double[8];
+    private double[] rawDistance = new double[8];
+
+    /** Tudo que so depende do inimigo, calculado uma vez por turno. */
+    private void cacheEnemies(List<Enemy> live, long now) {
+        int n = live.size();
+        if (enemyX.length < n) {
+            enemyX = new double[n]; enemyY = new double[n];
+            threat = new double[n]; angleToUs = new double[n];
+            angleToCandidate = new double[n]; rawDistance = new double[n];
+        }
+        cachedCount = n;
+
+        Point2D.Double here = bot.position();
+        double bias = bot.profile().survivalBias;
+
+        for (int i = 0; i < n; i++) {
+            Enemy e = live.get(i);
+            Point2D.Double ep = e.predictedPosition(now);
+            enemyX[i] = ep.x;
+            enemyY[i] = ep.y;
+            threat[i] = (1.0 + Util.clamp(0, e.energy, 150) / 60.0) * bias;
+            angleToUs[i] = Util.angle(ep, here);
+        }
+    }
+
     public Movement(TCN bot) {
         this.bot = bot;
     }
@@ -47,6 +86,7 @@ public class Movement {
 
     public void driveMelee(List<Enemy> live, long now) {
         Rectangle2D.Double safe = bot.safeField();
+        cacheEnemies(live, now);
 
         if (destination != null) {
             // Reavalia o destino atual: o campo de risco muda a cada turno.
@@ -94,37 +134,43 @@ public class Movement {
      */
     private double riskAt(Point2D candidate, List<Enemy> live, long now) {
         double risk = 0;
-        Point2D.Double here = bot.position();
         Profile p = bot.profile();
+        int n = cachedCount;
 
-        for (int i = 0; i < live.size(); i++) {
-            Enemy e = live.get(i);
-            Point2D.Double ep = e.predictedPosition(now);
+        double cx = candidate.getX(), cy = candidate.getY();
 
-            double d = Math.max(candidate.distance(ep), 25);
+        // Uma passada so para distancia e angulo de cada inimigo. O angulo
+        // calculado aqui e do inimigo ate o candidato; o termo de fogo cruzado
+        // precisaria do sentido oposto, mas os dois diferem exatamente por PI e
+        // la so entra a DIFERENCA entre dois angulos, onde o PI se cancela.
+        // Entao um atan2 por inimigo serve para os dois termos.
+        for (int i = 0; i < n; i++) {
+            double dx = cx - enemyX[i], dy = cy - enemyY[i];
+            rawDistance[i] = Math.sqrt(dx * dx + dy * dy);
+            angleToCandidate[i] = Math.atan2(dx, dy);
+        }
+
+        for (int i = 0; i < n; i++) {
+            double d = Math.max(rawDistance[i], 25);
 
             // 1. Proximidade. Inimigo com muita energia atira mais forte e
             //    aguenta mais, entao pesa mais. O quadrado da distancia faz o
             //    custo explodir de perto, o que na pratica e o anti-ram.
-            double threat = (1.0 + Util.clamp(0, e.energy, 150) / 60.0) * p.survivalBias;
-            risk += threat * 12000.0 / (d * d);
+            risk += threat[i] * 12000.0 / (d * d);
 
             // 2. Nao repetir angulo. Se o candidato esta na mesma direcao radial
             //    em que ja estamos em relacao a esse inimigo, chegar la nao muda
             //    a mira dele: um tiro direto continua valendo. Mover-se
             //    perpendicular e o que obriga o adversario a recalcular.
-            double delta = Util.angle(ep, candidate) - Util.angle(ep, here);
-            risk += threat * 90.0 * Math.abs(Math.cos(delta)) / Math.sqrt(d);
+            double delta = angleToCandidate[i] - angleToUs[i];
+            risk += threat[i] * 90.0 * Math.abs(Math.cos(delta)) / Math.sqrt(d);
 
             // 3. Fogo cruzado. Ficar entre dois inimigos e o pior lugar da
             //    arena: os dois miram e um erra no outro... acertando em nos.
-            for (int j = i + 1; j < live.size(); j++) {
-                Point2D.Double op = live.get(j).predictedPosition(now);
-                double a1 = Util.angle(candidate, ep);
-                double a2 = Util.angle(candidate, op);
-                double between = Math.abs(Util.relative(a1 - a2));
+            for (int j = i + 1; j < n; j++) {
+                double between = Math.abs(Util.relative(angleToCandidate[i] - angleToCandidate[j]));
                 if (between > 2.6) {                       // quase 180 graus
-                    risk += 260.0 / Math.max(candidate.distance(ep), 60);
+                    risk += 260.0 / Math.max(rawDistance[i], 60);
                 }
             }
         }
@@ -144,7 +190,7 @@ public class Movement {
 
         // 5. Custo de deslocamento. Atravessar a arena para chegar num ponto
         //    otimo geralmente significa cruzar a zona de tiro de todo mundo.
-        risk += here.distance(candidate) * 0.05;
+        risk += bot.position().distance(candidate) * 0.05;
 
         return risk;
     }
