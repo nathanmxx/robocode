@@ -152,6 +152,27 @@ primeiros lugares em 30. Parece que com muita gente atirando ao mesmo tempo,
 escolher bem a posição já resolve, e reagir a cada tiro atrapalha mais do que
 ajuda.
 
+## Usando o robô no Robocode
+
+O arquivo `dist/TCN.java` tem o robô inteiro, todas as classes juntas e sem
+declaração de pacote. Para usar ele direto no editor do Robocode:
+
+1. Abra o Robocode pelo `Abrir-Robocode.bat` (o atalho comum abre com o Java
+   errado e o editor não compila)
+2. Menu Robot, Editor
+3. Cole o conteúdo do arquivo
+4. Salve como `TCN.java` **direto em `C:\robocode\robots`**, sem criar pasta
+5. Compile
+6. Abra Battle, New, e confirme que `TCN` aparece na lista
+
+O passo 4 é o que mais dá errado. Como o arquivo não declara pacote, ele só
+funciona na raiz da pasta de robôs. Se salvar dentro de uma subpasta ele compila
+normalmente, gera os `.class` e mesmo assim o Robocode responde `Can't find`
+na hora de montar a batalha.
+
+Por isso o passo 6 existe. Compilar sem erro não garante nada, o que garante é
+ver o nome na lista de robôs.
+
 ## Documentação
 
 * [Regulamento](docs/Regulamento_Robocode.pdf), com as fases e a pontuação
