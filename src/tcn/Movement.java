@@ -90,7 +90,7 @@ public class Movement {
 
         if (destination != null) {
             // Reavalia o destino atual: o campo de risco muda a cada turno.
-            destinationRisk = riskAt(destination, live, now);
+            destinationRisk = riskAt(destination);
             if (!safe.contains(destination) || bot.position().distance(destination) < 30) {
                 destination = null;
                 destinationRisk = Double.MAX_VALUE;
@@ -107,7 +107,7 @@ public class Movement {
                 Point2D.Double candidate = Util.project(bot.position(), angle, radii[r]);
                 if (!safe.contains(candidate)) continue;
 
-                double risk = riskAt(candidate, live, now);
+                double risk = riskAt(candidate);
                 if (risk < bestRisk) {
                     bestRisk = risk;
                     best = candidate;
@@ -131,8 +131,12 @@ public class Movement {
     /**
      * Custo de ocupar um ponto. Cada parcela representa uma forma concreta de
      * morrer em uma arena lotada.
+     *
+     * Le a area de trabalho preenchida por cacheEnemies, e por isso NAO recebe a
+     * lista de inimigos: receber uma lista aqui sugeriria que ela e usada, e um
+     * chamador desavisado passaria outra lista achando que mudaria o resultado.
      */
-    private double riskAt(Point2D candidate, List<Enemy> live, long now) {
+    private double riskAt(Point2D candidate) {
         double risk = 0;
         Profile p = bot.profile();
         int n = cachedCount;
