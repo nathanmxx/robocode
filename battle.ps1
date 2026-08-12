@@ -39,16 +39,10 @@ $RobocodeHome = 'C:\robocode'
 $spar = @('spar.Hunter*','spar.Circler*','spar.Surfer*','spar.Rammer*','spar.Sniper*',
           'spar.WallsPro*')
 
-# teste.T67 e um COMPETIDOR REAL, publicado pelo autor em
-# github.com/thales-biondi12/Robocode. Entra no lugar do sample.MyFirstRobot, que
-# era o mais fraco da lista: adversario de verdade vale mais que bot de exemplo.
-# Isso muda a linha de base do melee - numeros anteriores a esta troca nao sao
-# comparaveis com os de agora.
-# spar.WallsPro entrou no lugar do sample.VelociRobot, que era o mais fraco:
-# e o modelo da ameaca declarada por uma equipe adversaria (movimento do Walls
-# com mira aprimorada). Mantem os 16 robos da Fase 1.
+# Robos de exemplo que vem com o Robocode. Junto com os de src/spar fecham os 16
+# da Fase 1.
 $samp = @('sample.Crazy','sample.Tracker','sample.SpinBot','sample.Walls','sample.RamFire',
-          'sample.Corners','sample.TrackFire','sample.Fire','teste.T67*')
+          'sample.Corners','sample.TrackFire','sample.Fire','sample.VelociRobot')
 
 # O preset so define o tamanho padrao da arena; -Width/-Height explicitos mandam.
 # Isso e o que permite varrer a mesma fase em varias arenas, ja que o regulamento
@@ -62,9 +56,9 @@ switch ($Preset) {
     # quem chega la e quem sobreviveu a fase anterior. Antes estes presets usavam
     # os mais fracos, o que tornava as fases seguintes mais faceis que a Fase 1 -
     # o oposto do funil real do campeonato.
-    'melee8'   { $field = @('teste.T67*','spar.WallsPro*','sample.Walls','sample.SpinBot',
-                            'spar.Hunter*','spar.Surfer*','spar.Circler*') }
-    'melee4'   { $field = @('teste.T67*','spar.WallsPro*','spar.Surfer*') }
+    'melee8'   { $field = @('spar.WallsPro*','spar.Hunter*','spar.Surfer*','spar.Circler*',
+                            'sample.Walls','sample.SpinBot','sample.Tracker') }
+    'melee4'   { $field = @('spar.WallsPro*','spar.Surfer*','sample.Walls') }
     'duel'     { $field = @( $(if ($Opponent) { $Opponent } else { 'spar.Surfer*' }) ) }
     'sparring' { $field = $spar }
     'samples'  { $field = $samp }
