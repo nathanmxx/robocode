@@ -138,9 +138,45 @@ foreach ($f in $ordered) {
         [void]$out.AppendLine($line)
     }
 }
+# ---------------------------------------------- enxugar o arquivo de entrega
+# O codigo em src/ fica comentado, porque e ele que se le e se mantem. Ja o
+# arquivo entregue no dia sai sem comentario e sem linha em branco: quem recebe
+# vai colar e compilar, nao ler, e um arquivo curto nao assusta.
+#
+# Seguro remover por texto porque nenhuma string do codigo contem // nem /*,
+# verificado antes de escrever isto.
+$linhas = $out.ToString() -split "`r?`n"
+$enxuto = New-Object System.Text.StringBuilder
+$dentroDeBloco = $false
+
+foreach ($linha in $linhas) {
+    $t = $linha
+
+    if ($dentroDeBloco) {
+        $fim = $t.IndexOf('*/')
+        if ($fim -lt 0) { continue }
+        $t = $t.Substring($fim + 2)
+        $dentroDeBloco = $false
+    }
+
+    while ($true) {
+        $ini = $t.IndexOf('/*')
+        if ($ini -lt 0) { break }
+        $fim = $t.IndexOf('*/', $ini + 2)
+        if ($fim -lt 0) { $t = $t.Substring(0, $ini); $dentroDeBloco = $true; break }
+        $t = $t.Substring(0, $ini) + $t.Substring($fim + 2)
+    }
+
+    $barra = $t.IndexOf('//')
+    if ($barra -ge 0) { $t = $t.Substring(0, $barra) }
+
+    if ($t.Trim().Length -eq 0) { continue }
+    [void]$enxuto.AppendLine($t.TrimEnd())
+}
+
 # UTF-8 sem BOM: o Set-Content do PowerShell 5.1 escreve BOM e o javac recusa o
 # arquivo com "illegal character: '﻿'".
-[System.IO.File]::WriteAllText($singleOut, $out.ToString(), (New-Object System.Text.UTF8Encoding($false)))
+[System.IO.File]::WriteAllText($singleOut, $enxuto.ToString(), (New-Object System.Text.UTF8Encoding($false)))
 
 # Gerar nao basta: so vale entregar o que compila.
 $check = Join-Path $root 'build\single'
