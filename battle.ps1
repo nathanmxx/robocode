@@ -42,7 +42,7 @@ $spar = @('spar.Hunter*','spar.Circler*','spar.Surfer*','spar.Rammer*','spar.Sni
 # Robos de exemplo que vem com o Robocode. Junto com os de src/spar fecham os 16
 # da Fase 1.
 $samp = @('sample.Crazy','sample.Tracker','sample.SpinBot','sample.Walls','sample.RamFire',
-          'sample.Corners','sample.TrackFire','sample.Fire','sample.VelociRobot')
+          'sample.Corners','sample.TrackFire','sample.Fire','spar.Nemesis*')
 
 # O preset so define o tamanho padrao da arena; -Width/-Height explicitos mandam.
 # Isso e o que permite varrer a mesma fase em varias arenas, ja que o regulamento
