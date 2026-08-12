@@ -33,6 +33,8 @@ $fases = @(
     @{ Nome = 'Final';   Preset = 'duel';    Rodadas = 10; Passam = 1 }
 )
 
+$desfecho = 'nao concluiu'
+
 Write-Host ''
 Write-Host '  CAMPEONATO ROBOCODE' -ForegroundColor Cyan
 Write-Host '  ===================' -ForegroundColor Cyan
@@ -77,7 +79,12 @@ foreach ($fase in $fases) {
 
     Write-Host ("{0}o de {1}, {2} pontos, {3}" -f $posicao, $total, $pontos, $texto) -ForegroundColor $cor
 
-    if (-not $passou) { break }
+    if (-not $passou) { $desfecho = $fase.Nome; break }
+    if ($fase.Nome -eq 'Final') { $desfecho = 'CAMPEAO' }
 }
 
+# Write-Output e nao Write-Host: o Write-Host desenha na tela mas nao entra no
+# fluxo de saida, entao quem chama este script num laco para contar titulos
+# recebia vazio e achava que nunca ganhou.
+Write-Output "RESULTADO=$desfecho"
 Write-Host ''
