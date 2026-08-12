@@ -110,13 +110,51 @@ resolve (o erro acontece quando a máquina só tem JRE, que não traz `javac`).
 ## Estrutura
 
 ```
-src/tcn/    robô de competição
-src/lev/    geração 1 congelada — régua fixa de comparação
-src/base/   cópia para A/B pareado
-src/spar/   5 arquétipos de adversário
-src/teste/  T67, competidor real (github.com/thales-biondi12/Robocode)
-docs/       regulamento e manual
+build.ps1          compila, instala e gera o entregável
+battle.ps1         roda uma batalha (use -Display para assistir)
+bench.ps1          mede N batalhas na condição do regulamento
+run.ps1            abre o Robocode com uma JVM moderna
+fix-compiler.ps1   conserta o compilador do editor do Robocode
+
+src/tcn/    o robô de competição
+src/lev/    geração 1 congelada — régua fixa entre gerações
+src/spar/   adversários de treino (ver abaixo)
+src/teste/  T67 — competidor real
+docs/       regulamento, manual e material da disciplina
+tools/      instalador do Robocode usado no projeto
 ```
+
+### Adversários de treino (`src/spar/`)
+
+| Robô | O que modela |
+|---|---|
+| `Hunter` | Persegue e fecha distância, mira linear |
+| `Circler` | Orbita a distância fixa, mira circular |
+| `Surfer` | Inverte o sentido ao detectar disparo |
+| `Sniper` | Fica longe e atira de longe |
+| `Rammer` | Vai para cima e colide |
+| `WallsPro` | **Ameaça declarada:** movimento do `Walls` com mira GuessFactor |
+| `WallsDodge` | Cenário pessimista: o `WallsPro` que também esquiva |
+
+`src/teste/T67.java` é o único adversário **real** do conjunto — publicado pelo
+autor em [github.com/thales-biondi12/Robocode](https://github.com/thales-biondi12/Robocode).
+Os demais são reconstruções.
+
+## Documentação
+
+| Arquivo | Conteúdo |
+|---|---|
+| [Regulamento](docs/Regulamento_Robocode.pdf) | Fases, rodadas, critérios de classificação e desempate, conduta |
+| [Manual](docs/ITL60801-Robocode-Manual.pdf) | Física do jogo, pontuação, API, categorias de tamanho de código |
+| [Vídeo](docs/Video_Sobre_Robocode.txt) | Link do vídeo da disciplina |
+
+Regras extraídas desses documentos que moldaram decisões do projeto:
+
+- **Pontuação:** cada morte na arena dá 50 pontos a **todos** os sobreviventes; quem
+  mata leva 20% do dano causado como bônus; dano de tiro vale 1 ponto por ponto de dano.
+- **30 turnos perdidos numa rodada desclassificam** o robô — daí a verificação a cada build.
+- **Classificação por pontuação total**, não por vitórias — é o que o `bench.ps1` mede.
+- Sem restrição de tamanho de código (categoria Megabots).
 
 ## Limitação conhecida
 

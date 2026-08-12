@@ -19,15 +19,13 @@ param(
     # Turnos por segundo no modo visual. 30 da para acompanhar; 10 mostra a
     # esquiva tiro a tiro; acima de 60 vira borrao.
     [int]$Tps = 30,
-    # Coloca a versao de referencia (base.Base) na mesma arena. Comparacao
-    # pareada: as duas versoes enfrentam exatamente as mesmas rodadas e os mesmos
-    # sorteios de posicao, o que elimina a variancia que torna amostras isoladas
-    # de melee inconclusivas.
+    # Coloca a versao de referencia na mesma arena, no lugar de um adversario.
+    # Comparacao pareada: as duas versoes enfrentam as mesmas rodadas e os mesmos
+    # sorteios de posicao, o que remove parte da variancia do melee.
     [switch]$Paired,
-    # Contra qual versao medir. 'base.Base*' e a geracao anterior (alvo movel,
-    # para A/B de uma mudanca isolada); 'lev.Leviathan*' e a geracao 1 congelada,
-    # que serve de regua estavel ao longo de todas as mudancas.
-    [string]$Reference = 'base.Base*'
+    # Contra qual versao comparar. lev.Leviathan e a geracao 1 congelada, que
+    # serve de regua estavel entre gerações.
+    [string]$Reference = 'lev.Leviathan*'
 )
 
 $ErrorActionPreference = 'Stop'

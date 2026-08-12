@@ -14,7 +14,7 @@
     Uso:
       .\bench.ps1 -Preset melee16 -Battles 20            # Fase 1: 5 rodadas
       .\bench.ps1 -Preset duel -Battles 30 -Rounds 10    # final: 10 rodadas
-      .\bench.ps1 -Preset duel -Opponent 'base.Base*'    # A/B contra outra versao
+      .\bench.ps1 -Preset duel -Opponent 'lev.Leviathan*' # contra a regua fixa
 #>
 param(
     [ValidateSet('melee16','melee8','melee4','duel','sparring','samples')]
