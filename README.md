@@ -1,4 +1,4 @@
-# TCN
+# TCNbots
 
 Robô de combate escrito em Java para o Robocode.
 
@@ -76,8 +76,8 @@ Precisa do Robocode instalado em `C:\robocode` e de um JDK.
 .\build.ps1
 ```
 
-Compila, instala o robô no Robocode e gera `dist/TCN.java`, que é o robô inteiro
-em um arquivo só.
+Compila, instala o robô no Robocode e gera `dist/TCNbots.java`, que é o robô
+inteiro em um arquivo só.
 
 ```powershell
 .\battle.ps1 -Preset melee16 -Rounds 5 -Display
@@ -116,7 +116,7 @@ tinha melhorado de verdade ou se eu só estava achando que sim.
 
 | Arquivo | O que faz |
 |---|---|
-| `TCN.java` | Junta tudo e decide qual modo usar |
+| `TCN.java` | Junta tudo e decide qual modo usar (vira `TCNbots` no arquivo gerado) |
 | `Movement.java` | O movimento da arena cheia |
 | `Surf.java` | O desvio de tiro do um contra um |
 | `Gun.java` | As quatro miras |
@@ -154,28 +154,30 @@ ajuda.
 
 ## Usando o robô no Robocode
 
-O arquivo `dist/TCN.java` tem o robô inteiro, todas as classes juntas e sem
-declaração de pacote. Para usar ele direto no editor do Robocode:
+O `build.ps1` gera `dist/TCNbots.java`, que é o robô inteiro num arquivo só, sem
+depender de mais nada. Para rodar ele:
 
-1. Abra o Robocode pelo `Abrir-Robocode.bat` (o atalho comum abre com o Java
-   errado e o editor não compila)
-2. Menu Robot, Editor
-3. Cole o conteúdo do arquivo
-4. Salve como `TCN.java` **direto em `C:\robocode\robots`**, sem criar pasta
-5. Compile
-6. Abra Battle, New, e confirme que `TCN` aparece na lista
+1. Abra o Robocode pelo `Abrir-Robocode.bat`, e não pelo atalho comum, que sobe
+   com o Java errado quando a máquina tem só JRE
+2. Crie a pasta `C:\robocode\robots\TCNbots`
+3. Coloque o `TCNbots.java` dentro dela
+4. Compile pelo editor do Robocode
+5. Abra Battle, New, e confirme que `TCNbots.TCNbots` aparece na lista
 
-O passo 4 é o que mais dá errado. Como o arquivo não declara pacote, ele só
-funciona na raiz da pasta de robôs. Se salvar dentro de uma subpasta ele compila
-normalmente, gera os `.class` e mesmo assim o Robocode responde `Can't find`
-na hora de montar a batalha.
+O passo 2 é o que mais dá errado. O arquivo declara `package TCNbots;` na
+primeira linha, e em Java o pacote tem que bater com o nome da pasta. Se ficar em
+outro lugar, ele compila sem erro nenhum, gera os `.class`, e mesmo assim o
+Robocode responde `Can't find` na hora de montar a batalha.
 
-Por isso o passo 6 existe. Compilar sem erro não garante nada, o que garante é
-ver o nome na lista de robôs.
+Por isso existe o passo 5. Compilar sem erro não prova nada, o que prova é ver o
+nome na lista de robôs.
+
+O robô não precisa de compilador específico: não usa nenhuma construção moderna
+da linguagem, e compila igual em JDK 8, 11, 17 e 21.
 
 ## Documentação
 
-* [Regulamento](docs/Regulamento_Robocode.pdf), com as fases e a pontuação
+* [Regulamento](docs/Regulamento_Robocode_Competicao.pdf), com as fases, a pontuação e o formato de entrega
 * [Manual](docs/ITL60801-Robocode-Manual.pdf), com a física do jogo e a API
 
 ## O que eu aprendi
