@@ -17,6 +17,16 @@ $DistDir      = Join-Path $root 'dist'
 $Package      = 'tcn'
 $MainClass    = 'TCN'
 
+# Nome do robo entregue ao jurado. O item 8 do regulamento manda criar um
+# diretorio com o nome da equipe e por o .java de mesmo nome dentro dele, como em
+# C:\Robocode\Robots\Equipe1\Equipe1.java - entao pasta, arquivo, pacote e classe
+# precisam ser todos o mesmo nome.
+#
+# A equipe se chama TCN-bots, e o hifen NAO e valido em identificador Java:
+# "package TCN-bots;" nao compila. TCNbots e o nome sem o caractere proibido.
+# Pendente de confirmacao com a comissao.
+$DeliveryName = 'TCNbots'
+
 # Bytecode alvo. Java 8 e proposital: o .class resultante carrega em qualquer
 # JVM 8 ou superior, entao o robo funciona na maquina oficial do evento
 # independentemente da versao de Java/Robocode instalada la.
@@ -111,7 +121,7 @@ Write-Host "jar    : $jarOut" -ForegroundColor DarkGray
 # do proprio Robocode sem montar estrutura de pastas. Java aceita varias classes
 # no mesmo arquivo desde que apenas uma seja public e tenha o nome do arquivo -
 # entao as auxiliares perdem o 'public' e viram package-private.
-$singleOut = Join-Path $DistDir "$MainClass.java"
+$singleOut = Join-Path $DistDir "$DeliveryName.java"
 
 $pkgSrc = Join-Path $SrcDir $Package
 $ordered = Get-ChildItem $pkgSrc -Filter '*.java' |
@@ -120,12 +130,19 @@ $ordered = Get-ChildItem $pkgSrc -Filter '*.java' |
 $imports = $ordered | ForEach-Object { Get-Content $_.FullName } |
            Where-Object { $_ -match '^import ' } | Sort-Object -Unique
 
-# SEM declaracao de pacote, de proposito. A entrega no dia e o codigo-fonte
-# colado no editor do Robocode pelo proprio juiz: sem pacote ele salva o arquivo
-# direto e compila, enquanto "package tcn;" exigiria criar a pasta tcn antes -
-# um passo a mais para dar errado com 5 minutos no relogio. Testado: o robo sem
-# pacote aparece como "TCN" e funciona igual.
+# O pacote do entregavel e TCN, com T maiusculo, e nao o tcn de src/.
+#
+# Exigencia do item 8 do regulamento: "deve ser criado um diretorio com o mesmo
+# nome do programa que deve ser o nome da equipe", com o exemplo
+# C:\Robocode\Robots\Equipe1\Equipe1.java. Ou seja, o robo fica DENTRO de uma
+# pasta com o nome da equipe, e em Java o pacote tem que casar com essa pasta.
+#
+# O nome vai igual ao da pasta, caixa inclusive: o Windows nao diferencia
+# maiuscula em nome de pasta, mas o Robocode monta o nome do robo a partir do
+# diretorio, e divergir ai e pedir para ele nao achar o robo.
 $out = New-Object System.Text.StringBuilder
+[void]$out.AppendLine("package $DeliveryName;")
+[void]$out.AppendLine()
 foreach ($i in $imports) { [void]$out.AppendLine($i) }
 
 foreach ($f in $ordered) {
@@ -171,6 +188,15 @@ foreach ($linha in $linhas) {
     if ($barra -ge 0) { $t = $t.Substring(0, $barra) }
 
     if ($t.Trim().Length -eq 0) { continue }
+
+    # A classe principal passa a se chamar como a equipe, porque o arquivo tem
+    # que se chamar como a pasta e em Java a classe publica tem que se chamar
+    # como o arquivo. Trocado por texto, o que so e seguro porque nenhuma string
+    # do codigo contem TCN - verificado antes de escrever isto.
+    if ($MainClass -ne $DeliveryName) {
+        $t = $t -replace "\b$MainClass\b", $DeliveryName
+    }
+
     [void]$enxuto.AppendLine($t.TrimEnd())
 }
 
