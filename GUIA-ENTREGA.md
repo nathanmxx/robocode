@@ -56,6 +56,22 @@ Esse último passo é o único que realmente prova que deu certo. Compilar sem e
 não prova nada: já aconteceu de compilar, gerar tudo, e o robô não existir para
 o Robocode porque estava na pasta errada.
 
+### O nome que aparece no jogo
+
+| Onde | O que aparece |
+|---|---|
+| *Battle → New*, lista de robôs | `TCN_bots.TCN_bots*` |
+| Placar e arena, durante a batalha | `TCN_bots*` |
+
+Na lista o Robocode escreve `pacote.classe`; como os dois se chamam `TCN_bots`,
+sai o nome repetido. Na arena ele usa só o nome curto.
+
+**O asterisco não faz parte do nome.** O Robocode marca com `*` todo robô
+compilado no editor em vez de empacotado em `.jar` — é a marca de *development
+version*. Como o regulamento manda enviar só o `.java`, todo robô do campeonato
+vai aparecer assim. Ele só sumiria empacotando o robô (*Robot → Package robot
+for upload*), que é justamente o que o regulamento não permite.
+
 ---
 
 ## Se a máquina der problema
