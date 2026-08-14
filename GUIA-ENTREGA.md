@@ -3,7 +3,7 @@
 Equipe **TCN-bots**. Robô entregue como **`TCNbots.java`**.
 
 O nome do robô perde o hífen porque Java não aceita hífen em nome de pacote nem
-de classe. Se a comissão exigir outro nome, avise que é rápido de refazer.
+de classe. **A comissão já confirmou que aceita o nome assim.**
 
 ---
 
@@ -94,12 +94,14 @@ Quase sempre é a pasta. Confira que o caminho é exatamente
 
 ---
 
-## Perguntas em aberto para a comissão
+## Pergunta em aberto para a comissão
 
-1. **O nome da equipe tem hífen e Java não aceita.** Podemos usar `TCNbots`?
-2. **O regulamento se contradiz na Fase 2.** O texto diz 16 equipes em 2 arenas
-   de 8, com Top 4 avançando. A tabela logo abaixo diz 18 equipes em 2 arenas de
-   9, com Top 5. Qual vale?
+**O regulamento se contradiz na Fase 2.** O texto diz 16 equipes em 2 arenas de
+8, com Top 4 avançando. A tabela logo abaixo diz 18 equipes em 2 arenas de 9,
+com Top 5. Qual vale?
+
+Não muda nada do que precisa ser feito na entrega, e o robô se adapta sozinho ao
+número de adversários. É só para não haver surpresa na hora.
 
 ---
 
