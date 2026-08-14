@@ -23,9 +23,12 @@ $MainClass    = 'TCN'
 # precisam ser todos o mesmo nome.
 #
 # A equipe se chama TCN-bots, e o hifen NAO e valido em identificador Java:
-# "package TCN-bots;" nao compila. TCNbots e o nome sem o caractere proibido.
-# Pendente de confirmacao com a comissao.
-$DeliveryName = 'TCNbots'
+# "package TCN-bots;" nao compila. O sublinhado e, e mantem o nome legivel do
+# jeito que a equipe esta inscrita, entao e ele que substitui o hifen.
+#
+# Trocar este nome troca pacote, pasta, arquivo e classe de uma vez so: nao ha
+# nenhum outro lugar para editar.
+$DeliveryName = 'TCN_bots'
 
 # Bytecode alvo. Java 8 e proposital: o .class resultante carrega em qualquer
 # JVM 8 ou superior, entao o robo funciona na maquina oficial do evento
@@ -116,93 +119,113 @@ Add-Type -AssemblyName System.IO.Compression.FileSystem
 Remove-Item $staging -Recurse -Force
 Write-Host "jar    : $jarOut" -ForegroundColor DarkGray
 
-# ------------------------------------------- versao de arquivo unico (compartilhar)
-# Junta o robo inteiro em um .java so, para quem quiser copiar e colar no editor
-# do proprio Robocode sem montar estrutura de pastas. Java aceita varias classes
-# no mesmo arquivo desde que apenas uma seja public e tenha o nome do arquivo -
-# entao as auxiliares perdem o 'public' e viram package-private.
-$singleOut = Join-Path $DistDir "$DeliveryName.java"
+# ------------------------------------------------ versao de arquivo unico (entrega)
+# Le um .java e devolve so o codigo: sem package, sem import, sem comentario e
+# sem linha em branco. O codigo comentado e o de src/, que e o que se le e se
+# mantem; o arquivo entregue no dia e para colar e compilar.
+#
+# Seguro remover comentario por texto porque nenhuma string do codigo contem //
+# nem /*, verificado antes de escrever isto.
+function Read-Codigo([string]$Path) {
+    $codigo = New-Object System.Collections.Generic.List[string]
+    $dentroDeBloco = $false
 
-$pkgSrc = Join-Path $SrcDir $Package
-$ordered = Get-ChildItem $pkgSrc -Filter '*.java' |
-           Sort-Object @{ Expression = { if ($_.BaseName -eq $MainClass) { 1 } else { 0 } } }, Name
+    foreach ($linha in Get-Content $Path) {
+        $t = $linha
 
-$imports = $ordered | ForEach-Object { Get-Content $_.FullName } |
-           Where-Object { $_ -match '^import ' } | Sort-Object -Unique
+        if ($dentroDeBloco) {
+            $fim = $t.IndexOf('*/')
+            if ($fim -lt 0) { continue }
+            $t = $t.Substring($fim + 2)
+            $dentroDeBloco = $false
+        }
 
-# O pacote do entregavel e TCN, com T maiusculo, e nao o tcn de src/.
+        while ($true) {
+            $ini = $t.IndexOf('/*')
+            if ($ini -lt 0) { break }
+            $fim = $t.IndexOf('*/', $ini + 2)
+            if ($fim -lt 0) { $t = $t.Substring(0, $ini); $dentroDeBloco = $true; break }
+            $t = $t.Substring(0, $ini) + $t.Substring($fim + 2)
+        }
+
+        $barra = $t.IndexOf('//')
+        if ($barra -ge 0) { $t = $t.Substring(0, $barra) }
+
+        if ($t -match '^\s*(package|import) ') { continue }
+        if ($t.Trim().Length -eq 0) { continue }
+
+        $codigo.Add($t.TrimEnd())
+    }
+
+    return ,$codigo.ToArray()
+}
+
+# A classe principal passa a se chamar como a equipe, porque o arquivo tem que
+# se chamar como a pasta e em Java a classe publica tem que se chamar como o
+# arquivo. Trocado por texto, o que so e seguro porque nenhuma string do codigo
+# contem TCN - verificado antes de escrever isto.
+function Rename-Classe([string]$Linha) {
+    if ($MainClass -eq $DeliveryName) { return $Linha }
+    return ($Linha -replace "\b$MainClass\b", $DeliveryName)
+}
+
+# Junta o robo inteiro em um .java so. O que o jurado recebe e UM arquivo com UMA
+# classe, com o nome da equipe, e as auxiliares aninhadas dentro dela.
+#
+# Java tambem aceitaria as auxiliares soltas no mesmo arquivo, so tirando o
+# 'public' - era assim antes. So que ai a primeira classe do arquivo era Enemy e
+# a do robo ficava na ultima pagina: quem abria o arquivo procurando o nome da
+# equipe encontrava outro nome no topo e concluia que estava errado. Aninhadas,
+# o arquivo declara uma classe so e ela aparece logo abaixo dos imports.
 #
 # Exigencia do item 8 do regulamento: "deve ser criado um diretorio com o mesmo
 # nome do programa que deve ser o nome da equipe", com o exemplo
 # C:\Robocode\Robots\Equipe1\Equipe1.java. Ou seja, o robo fica DENTRO de uma
-# pasta com o nome da equipe, e em Java o pacote tem que casar com essa pasta.
+# pasta com o nome da equipe, e em Java o pacote tem que casar com essa pasta -
+# por isso o pacote aqui e o nome da equipe, e nao o tcn de src/.
 #
 # O nome vai igual ao da pasta, caixa inclusive: o Windows nao diferencia
 # maiuscula em nome de pasta, mas o Robocode monta o nome do robo a partir do
 # diretorio, e divergir ai e pedir para ele nao achar o robo.
+$singleOut = Join-Path $DistDir "$DeliveryName.java"
+
+$pkgSrc  = Join-Path $SrcDir $Package
+$helpers = Get-ChildItem $pkgSrc -Filter '*.java' |
+           Where-Object { $_.BaseName -ne $MainClass } | Sort-Object Name
+
+$imports = Get-ChildItem $pkgSrc -Filter '*.java' | ForEach-Object { Get-Content $_.FullName } |
+           Where-Object { $_ -match '^import ' } | Sort-Object -Unique
+
+$mainLines = Read-Codigo (Join-Path $pkgSrc "$MainClass.java")
+if ($mainLines[-1].Trim() -ne '}') {
+    throw "$MainClass.java nao termina no fecha-chaves da classe; o aninhamento depende disso"
+}
+
 $out = New-Object System.Text.StringBuilder
+[void]$out.AppendLine("// $DeliveryName - robo da equipe TCN-bots, Campeonato Robocode dos Colegios UniVap.")
+[void]$out.AppendLine("// A classe do robo e $DeliveryName, declarada logo abaixo. As demais classes sao")
+[void]$out.AppendLine("// auxiliares dela e por isso estao aninhadas dentro dela: o arquivo tem uma")
+[void]$out.AppendLine("// unica classe de topo, com o nome da equipe, como o regulamento pede.")
 [void]$out.AppendLine("package $DeliveryName;")
-[void]$out.AppendLine()
 foreach ($i in $imports) { [void]$out.AppendLine($i) }
 
-foreach ($f in $ordered) {
-    [void]$out.AppendLine()
-    foreach ($line in Get-Content $f.FullName) {
-        if ($line -match '^package ' -or $line -match '^import ') { continue }
-        if ($f.BaseName -ne $MainClass) {
-            $line = $line -replace '^public (final )?class ', '$1class '
-        }
-        [void]$out.AppendLine($line)
+# o corpo da classe principal menos o '}' final: as auxiliares entram antes dele
+for ($i = 0; $i -lt $mainLines.Count - 1; $i++) {
+    [void]$out.AppendLine((Rename-Classe $mainLines[$i]))
+}
+
+foreach ($h in $helpers) {
+    foreach ($linha in (Read-Codigo $h.FullName)) {
+        $linha = $linha -replace '^public (final )?class ', 'static $1class '
+        [void]$out.AppendLine('    ' + (Rename-Classe $linha))
     }
 }
-# ---------------------------------------------- enxugar o arquivo de entrega
-# O codigo em src/ fica comentado, porque e ele que se le e se mantem. Ja o
-# arquivo entregue no dia sai sem comentario e sem linha em branco: quem recebe
-# vai colar e compilar, nao ler, e um arquivo curto nao assusta.
-#
-# Seguro remover por texto porque nenhuma string do codigo contem // nem /*,
-# verificado antes de escrever isto.
-$linhas = $out.ToString() -split "`r?`n"
-$enxuto = New-Object System.Text.StringBuilder
-$dentroDeBloco = $false
 
-foreach ($linha in $linhas) {
-    $t = $linha
-
-    if ($dentroDeBloco) {
-        $fim = $t.IndexOf('*/')
-        if ($fim -lt 0) { continue }
-        $t = $t.Substring($fim + 2)
-        $dentroDeBloco = $false
-    }
-
-    while ($true) {
-        $ini = $t.IndexOf('/*')
-        if ($ini -lt 0) { break }
-        $fim = $t.IndexOf('*/', $ini + 2)
-        if ($fim -lt 0) { $t = $t.Substring(0, $ini); $dentroDeBloco = $true; break }
-        $t = $t.Substring(0, $ini) + $t.Substring($fim + 2)
-    }
-
-    $barra = $t.IndexOf('//')
-    if ($barra -ge 0) { $t = $t.Substring(0, $barra) }
-
-    if ($t.Trim().Length -eq 0) { continue }
-
-    # A classe principal passa a se chamar como a equipe, porque o arquivo tem
-    # que se chamar como a pasta e em Java a classe publica tem que se chamar
-    # como o arquivo. Trocado por texto, o que so e seguro porque nenhuma string
-    # do codigo contem TCN - verificado antes de escrever isto.
-    if ($MainClass -ne $DeliveryName) {
-        $t = $t -replace "\b$MainClass\b", $DeliveryName
-    }
-
-    [void]$enxuto.AppendLine($t.TrimEnd())
-}
+[void]$out.AppendLine('}')
 
 # UTF-8 sem BOM: o Set-Content do PowerShell 5.1 escreve BOM e o javac recusa o
 # arquivo com "illegal character: '﻿'".
-[System.IO.File]::WriteAllText($singleOut, $enxuto.ToString(), (New-Object System.Text.UTF8Encoding($false)))
+[System.IO.File]::WriteAllText($singleOut, $out.ToString(), (New-Object System.Text.UTF8Encoding($false)))
 
 # Gerar nao basta: so vale entregar o que compila.
 $check = Join-Path $root 'build\single'

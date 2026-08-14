@@ -1,9 +1,16 @@
-# Guia de entrega do TCNbots
+# Guia de entrega do TCN_bots
 
-Equipe **TCN-bots**. Robô entregue como **`TCNbots.java`**.
+Equipe **TCN-bots**. Robô entregue como **`TCN_bots.java`**.
 
-O nome do robô perde o hífen porque Java não aceita hífen em nome de pacote nem
-de classe. **A comissão já confirmou que aceita o nome assim.**
+O hífen vira sublinhado porque Java não aceita hífen em nome de pacote nem de
+classe: `package TCN-bots;` não compila. O sublinhado é caractere válido em
+identificador Java, então `TCN_bots` é o nome da equipe escrito do jeito mais
+próximo possível do original.
+
+Dentro do arquivo existe **uma classe só, `TCN_bots`**, e é ela que estende
+`AdvancedRobot`. As auxiliares (`Enemy`, `Gun`, `Movement`, `Surf`, `Wave`,
+`Profile`, `Shield`, `Util`) ficam aninhadas dentro dela. Nenhuma outra classe
+de topo aparece no arquivo.
 
 ---
 
@@ -22,28 +29,28 @@ Traduzindo para o nosso caso, a estrutura tem que ficar assim:
 ```
 C:\Robocode
    └── Robots
-        └── TCNbots
-             └── TCNbots.java
+        └── TCN_bots
+             └── TCN_bots.java
 ```
 
-**A pasta precisa se chamar `TCNbots`.** O arquivo declara `package TCNbots;` na
-primeira linha, e em Java o pacote tem que bater com o nome da pasta. Se o
-arquivo for parar em outro lugar, ele compila normalmente e mesmo assim o
-Robocode não encontra o robô na hora de montar a batalha.
+**A pasta precisa se chamar `TCN_bots`.** O arquivo declara `package TCN_bots;`
+na primeira linha de código, e em Java o pacote tem que bater com o nome da
+pasta. Se o arquivo for parar em outro lugar, ele compila normalmente e mesmo
+assim o Robocode não encontra o robô na hora de montar a batalha.
 
 ---
 
 ## No dia: o que fazer
 
-**1. Envie o `TCNbots.java` pelo formulário.** Só esse arquivo. Não mande `.jar`,
+**1. Envie o `TCN_bots.java` pelo formulário.** Só esse arquivo. Não mande `.jar`,
 não mande pasta compactada.
 
 **2. Se pedirem para carregar na máquina oficial**, a estrutura acima é o que
 precisa existir. Confira com quem estiver operando que a pasta se chama
-`TCNbots`.
+`TCN_bots`.
 
 **3. Antes de dar a entrega por concluída**, peça para abrir *Battle → New* e
-confirmar que **`TCNbots.TCNbots`** aparece na lista de robôs.
+confirmar que **`TCN_bots.TCN_bots`** aparece na lista de robôs.
 
 Esse último passo é o único que realmente prova que deu certo. Compilar sem erro
 não prova nada: já aconteceu de compilar, gerar tudo, e o robô não existir para
@@ -89,8 +96,8 @@ laboratório precisa instalar um JDK.
 ### O robô não aparece na lista
 
 Quase sempre é a pasta. Confira que o caminho é exatamente
-`C:\robocode\robots\TCNbots\TCNbots.java` e que a primeira linha do arquivo é
-`package TCNbots;`.
+`C:\robocode\robots\TCN_bots\TCN_bots.java` e que a primeira linha de código do
+arquivo é `package TCN_bots;`.
 
 ---
 
@@ -107,6 +114,23 @@ número de adversários. É só para não haver surpresa na hora.
 
 ## Contexto do robô
 
-Um arquivo só, todas as classes dentro, sem dependência externa. Compila em
-qualquer JDK 8 ou superior. Nos testes ele fica em primeiro na maioria das
-simulações das quatro fases.
+Um arquivo só, uma classe só de topo (`TCN_bots`), sem dependência externa.
+Compila em qualquer JDK 8 ou superior. Nos testes ele fica em primeiro na
+maioria das simulações das quatro fases.
+
+### Se perguntarem qual é a classe do robô
+
+É a `TCN_bots`, logo abaixo dos imports, e o cabeçalho do arquivo diz isso:
+
+```java
+public class TCN_bots extends AdvancedRobot {
+```
+
+`Enemy`, `Gun`, `Movement`, `Surf`, `Wave`, `Profile`, `Shield` e `Util` são
+partes do robô — mira, movimento, memória do adversário — e estão declaradas
+**dentro** da `TCN_bots`, indentadas, como `static class`. Não são robôs, não são
+interfaces e não são classes soltas: são o robô por dentro, e o Robocode nunca
+as lista, porque quem estende `AdvancedRobot` é só a `TCN_bots`.
+
+Separar em classes é o que deixa o robô legível; juntar tudo em uma classe
+gigante não mudaria nada do comportamento e só dificultaria a leitura.
