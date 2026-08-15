@@ -204,7 +204,7 @@ if ($mainLines[-1].Trim() -ne '}') {
 $out = New-Object System.Text.StringBuilder
 # O cabecalho so escreve o nome de entrega. Nenhuma outra grafia do nome entra
 # no arquivo: a unica coisa que o jurado le e TCN_bots, do comeco ao fim.
-[void]$out.AppendLine("// $DeliveryName - Campeonato Robocode dos Colegios UniVap.")
+[void]$out.AppendLine("// $DeliveryName - robo da equipe TCN-bots, Campeonato Robocode dos Colegios UniVap.")
 [void]$out.AppendLine("// A classe do robo e $DeliveryName, declarada logo abaixo. As demais classes sao")
 [void]$out.AppendLine("// auxiliares dela e por isso estao aninhadas dentro dela: o arquivo tem uma")
 [void]$out.AppendLine("// unica classe de topo, com o nome da equipe, como o regulamento pede.")

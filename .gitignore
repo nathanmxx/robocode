@@ -1,5 +1,7 @@
 build/
 dist/
+# menos o robô entregue no campeonato, que é o resultado do projeto
+!dist/TCN_bots.java
 out/
 results/
 *.class

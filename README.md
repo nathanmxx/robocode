@@ -2,14 +2,34 @@
 
 Robô de combate escrito em Java para o Robocode.
 
-**Campeão do Campeonato Robocode dos Colégios UniVap, invicto: 10 vitórias em
-10 na final.**
+**Campeão do Campeonato Robocode dos Colégios UniVap, em primeiro lugar nas
+quatro fases.**
 
 No Robocode você não joga com o tanque, você programa o cérebro dele. Depois que
 a batalha começa ninguém toca em nada: o robô precisa enxergar sozinho com o
 radar, decidir para onde ir, calcular a mira e escolher a hora de atirar. Tudo
 isso acontece dezenas de vezes por segundo, e cada turno dá um tempo limitado
 para pensar.
+
+O robô que competiu está aqui: [`dist/TCN_bots.java`](dist/TCN_bots.java).
+
+## O campeonato
+
+| Fase | Formato | Resultado |
+|---|---|---|
+| Fase 1 | 9 equipes na arena, 10 rodadas | 1º lugar |
+| Fase 2 | 8 equipes na arena, 10 rodadas | 1º lugar |
+| Semifinal | 1×1, chaveamento entre os 4 finalistas, 10 rodadas | venceu por 10 a 0 |
+| Final | 1×1, 10 rodadas | venceu por 10 a 0 |
+
+As duas primeiras fases foram na arena cheia, com todas as equipes ao mesmo
+tempo. A partir da semifinal virou mata-mata: os quatro classificados foram
+separados em duas chaves, e as duas batalhas que o robô disputou nesse formato
+terminaram 10 a 0.
+
+Os dois formatos pedem coisas opostas, e é por isso que o robô tem dois modos.
+Na arena cheia dá pontos quem sobrevive; no um contra um só existe uma forma de
+pontuar, que é acertar sem ser acertado.
 
 ## Sobre este projeto
 
@@ -76,49 +96,42 @@ Com a arena cheia o radar gira sem parar, porque perder alguém de vista é pior
 que ver todo mundo com atraso. No um contra um ele trava no inimigo, já que aí
 cada turno sem informação é um turno desviando às cegas.
 
-## Como rodar
+## Como eu testava
 
-Precisa do Robocode instalado em `C:\robocode` e de um JDK.
+O campeonato acontece uma vez só, então tudo dependia de conseguir simular as
+fases antes. Montei quatro scripts em PowerShell para isso:
 
-```powershell
-.\build.ps1
-```
+| Script | O que faz |
+|---|---|
+| `build.ps1` | Compila e junta o robô inteiro no arquivo único da entrega |
+| `battle.ps1` | Roda uma batalha, com presets para cada formato de fase |
+| `bench.ps1` | Roda N batalhas seguidas e conta em quantas o robô ficou em primeiro |
+| `campeonato.ps1` | Simula o campeonato inteiro em sequência, parando se o robô for eliminado |
+| `run.ps1` | Abre o Robocode para assistir a uma batalha na tela |
 
-Compila, instala o robô no Robocode e gera `dist/TCN_bots.java`, que é o robô
-inteiro em um arquivo só.
+O `bench.ps1` é o que mais usei. Uma batalha isolada não diz nada, porque a
+variação entre execuções é grande: um robô pior ganha uma batalha por sorte com
+facilidade. Vinte batalhas seguidas já mostram se a mudança valeu.
 
-```powershell
-.\battle.ps1 -Preset melee16 -Rounds 5 -Display
-```
+Como adversário eu escrevi robôs de treino com estilos diferentes (`src/spar/`),
+cada um explorando uma fraqueza específica — quem persegue, quem orbita, quem
+fica na parede, quem atira de longe. Um deles é a reprodução da estratégia que
+uma equipe adversária tinha anunciado que ia usar.
 
-Roda uma batalha e abre a janela para assistir.
-
-```powershell
-.\bench.ps1 -Preset melee16 -Battles 20
-```
-
-Roda 20 batalhas seguidas e mostra em quantas o robô ficou em primeiro. Uma
-batalha só não diz nada, porque a variação é grande, então eu sempre olho várias.
+Também guardei a primeira versão do robô em `src/lev/`, congelada. Toda vez que
+eu mudava alguma coisa, colocava a versão nova para enfrentar a antiga. Foi a
+coisa mais útil que eu fiz no projeto: é o que separa "melhorou de verdade" de
+"eu achei que tinha melhorado".
 
 ## Estrutura
 
 ```
-build.ps1     compila e instala
-battle.ps1    roda uma batalha
-bench.ps1     roda várias batalhas e resume o resultado
-run.ps1       abre o Robocode
-fix-compiler.ps1  conserta o compilador do editor do Robocode
-
 src/tcn/      o robô
 src/spar/     robôs de treino, com estilos diferentes para eu testar contra
 src/lev/      primeira versão do robô, guardada para comparar as gerações
+dist/         o robô entregue no campeonato, tudo em um arquivo só
 docs/         regulamento e manual do campeonato
-tools/        instalador do Robocode
 ```
-
-Guardar a primeira versão foi uma das coisas mais úteis que eu fiz. Toda vez que
-eu mudava alguma coisa, colocava a versão nova para enfrentar a antiga e via se
-tinha melhorado de verdade ou se eu só estava achando que sim.
 
 ## O robô por dentro
 
@@ -160,51 +173,44 @@ primeiros lugares em 30. Parece que com muita gente atirando ao mesmo tempo,
 escolher bem a posição já resolve, e reagir a cada tiro atrapalha mais do que
 ajuda.
 
-## Usando o robô no Robocode
+## O formato da entrega
 
-O `build.ps1` gera `dist/TCN_bots.java`, que é o robô inteiro num arquivo só, sem
-depender de mais nada. Para rodar ele:
+O regulamento manda entregar só o `.java`, dentro de uma pasta com o nome da
+equipe. O robô é desenvolvido em nove arquivos separados, então o `build.ps1`
+junta tudo em `dist/TCN_bots.java`: uma classe pública só, `TCN_bots`, com as
+oito auxiliares aninhadas dentro dela.
 
-1. Abra o Robocode pelo `Abrir-Robocode.bat`, e não pelo atalho comum, que sobe
-   com o Java errado quando a máquina tem só JRE
-2. Crie a pasta `C:\robocode\robots\TCN_bots`
-3. Coloque o `TCN_bots.java` dentro dela
-4. Compile pelo editor do Robocode
-5. Abra Battle, New, e confirme que `TCN_bots.TCN_bots` aparece na lista
+O aninhamento não é detalhe estético. Na primeira versão as auxiliares ficavam
+soltas no mesmo arquivo, o que Java aceita, mas isso colocava `class Enemy` na
+primeira linha e a classe do robô lá pela linha 850. Quem abria o arquivo
+procurando o nome da equipe encontrava outro nome no topo e concluía que estava
+errado — foi exatamente o que aconteceu na conferência da entrega. Com as
+auxiliares dentro da classe principal, o arquivo declara uma coisa só e ela
+aparece logo abaixo dos imports.
 
-O arquivo gerado tem **uma classe só**, `TCN_bots`, logo abaixo dos imports, e é
-ela que estende `AdvancedRobot`. As outras oito (`Enemy`, `Gun`, `Movement` e
-companhia) são auxiliares e ficam aninhadas dentro dela, então não existe no
-arquivo nenhuma outra classe de topo que possa ser confundida com o robô.
-
-O passo 2 é o que mais dá errado. O arquivo declara `package TCN_bots;` na
-primeira linha de código, e em Java o pacote tem que bater com o nome da pasta.
-Se ficar em outro lugar, ele compila sem erro nenhum, gera os `.class`, e mesmo
-assim o Robocode responde `Can't find` na hora de montar a batalha.
-
-Por isso existe o passo 5. Compilar sem erro não prova nada, o que prova é ver o
-nome na lista de robôs.
-
-O robô não precisa de compilador específico: não usa nenhuma construção moderna
-da linguagem, e compila igual em JDK 8, 11, 17 e 21.
+O robô não usa nenhuma construção moderna da linguagem, então compila igual em
+JDK 8, 11, 17 e 21, e também no ECJ que acompanha o editor do Robocode. Isso foi
+proposital: a máquina do evento era desconhecida.
 
 ## Documentação
 
 * [Regulamento](docs/Regulamento_Robocode_Competicao.pdf), com as fases, a pontuação e o formato de entrega
 * [Manual](docs/ITL60801-Robocode-Manual.pdf), com a física do jogo e a API
-* [Guia de entrega](GUIA-ENTREGA.md), o passo a passo que usei para levar o robô pronto no dia da competição
 * [Vídeo de introdução ao Robocode](https://youtu.be/8s8BtMYZ2kw)
 
 ## O que eu aprendi
 
 O maior erro que eu cometi foi testar errado. Eu rodava batalhas de 400 rodadas
-para ver se uma mudança tinha sido boa, mas o campeonato tem 5 rodadas. Como o
-robô vai aprendendo com o adversário durante a batalha, em 400 rodadas ele fica
-ótimo e em 5 mal começou. Uma mudança que parecia excelente estava na verdade
-piorando o robô na única condição que importava.
+para ver se uma mudança tinha sido boa, mas cada fase do campeonato tem só uma
+dezena. Como o robô vai aprendendo com o adversário durante a batalha, em 400
+rodadas ele fica ótimo e em 10 mal começou. Uma mudança que parecia excelente
+estava na verdade piorando o robô na única condição que importava.
 
 Depois disso passei a medir sempre do jeito que o campeonato acontece, e várias
-decisões que eu tinha tomado antes precisaram ser refeitas.
+decisões que eu tinha tomado antes precisaram ser refeitas. Uma delas mudou
+completamente o resultado do um contra um: com a medição errada eu tinha
+aproximado demais a distância de órbita, e na condição real isso fazia o robô
+perder para a própria versão anterior.
 
 ## Licença
 
