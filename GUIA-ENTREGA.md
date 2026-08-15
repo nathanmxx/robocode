@@ -1,5 +1,9 @@
 # Guia de entrega do TCN_bots
 
+Este foi o passo a passo que segui para levar o robô pronto para a máquina do
+campeonato, incluindo os problemas que encontrei e como resolvi cada um. Ficou
+no repositório como registro de como a entrega foi feita de verdade.
+
 Equipe **TCN-bots**. Robô entregue como **`TCN_bots.java`**.
 
 O hífen vira sublinhado porque Java não aceita hífen em nome de pacote nem de
@@ -117,22 +121,11 @@ arquivo é `package TCN_bots;`.
 
 ---
 
-## Pergunta em aberto para a comissão
-
-**O regulamento se contradiz na Fase 2.** O texto diz 16 equipes em 2 arenas de
-8, com Top 4 avançando. A tabela logo abaixo diz 18 equipes em 2 arenas de 9,
-com Top 5. Qual vale?
-
-Não muda nada do que precisa ser feito na entrega, e o robô se adapta sozinho ao
-número de adversários. É só para não haver surpresa na hora.
-
----
-
 ## Contexto do robô
 
 Um arquivo só, uma classe só de topo (`TCN_bots`), sem dependência externa.
-Compila em qualquer JDK 8 ou superior. Nos testes ele fica em primeiro na
-maioria das simulações das quatro fases.
+Compila em qualquer JDK 8 ou superior. Terminou o campeonato como campeão,
+invicto: 10 vitórias em 10 na final.
 
 ### Se perguntarem qual é a classe do robô
 

@@ -2,13 +2,21 @@
 
 Robô de combate escrito em Java para o Robocode.
 
+**Campeão do Campeonato Robocode dos Colégios UniVap, invicto: 10 vitórias em
+10 na final.**
+
 No Robocode você não joga com o tanque, você programa o cérebro dele. Depois que
 a batalha começa ninguém toca em nada: o robô precisa enxergar sozinho com o
 radar, decidir para onde ir, calcular a mira e escolher a hora de atirar. Tudo
 isso acontece dezenas de vezes por segundo, e cada turno dá um tempo limitado
 para pensar.
 
-Este projeto foi feito para o Campeonato Robocode dos Colégios UniVap.
+## Sobre este projeto
+
+As ideias e a maior parte do código são minhas. Usei IA (Claude, da Anthropic)
+como apoio ao longo do caminho, principalmente para escrever os scripts de
+teste em lote e para revisar trecho por trecho enquanto eu decidia a estratégia.
+As decisões de como o robô deveria se comportar, e por quê, foram minhas.
 
 ## Como o robô pensa
 
@@ -184,6 +192,8 @@ da linguagem, e compila igual em JDK 8, 11, 17 e 21.
 
 * [Regulamento](docs/Regulamento_Robocode_Competicao.pdf), com as fases, a pontuação e o formato de entrega
 * [Manual](docs/ITL60801-Robocode-Manual.pdf), com a física do jogo e a API
+* [Guia de entrega](GUIA-ENTREGA.md), o passo a passo que usei para levar o robô pronto no dia da competição
+* [Vídeo de introdução ao Robocode](https://youtu.be/8s8BtMYZ2kw)
 
 ## O que eu aprendi
 
@@ -195,3 +205,7 @@ piorando o robô na única condição que importava.
 
 Depois disso passei a medir sempre do jeito que o campeonato acontece, e várias
 decisões que eu tinha tomado antes precisaram ser refeitas.
+
+## Licença
+
+MIT. Ver [LICENSE](LICENSE).
