@@ -6,10 +6,8 @@ Robô de combate escrito em Java para o Robocode.
 quatro fases.**
 
 No Robocode você não joga com o tanque, você programa o cérebro dele. Depois que
-a batalha começa ninguém toca em nada: o robô precisa enxergar sozinho com o
-radar, decidir para onde ir, calcular a mira e escolher a hora de atirar. Tudo
-isso acontece dezenas de vezes por segundo, e cada turno dá um tempo limitado
-para pensar.
+a batalha começa ninguém toca em nada: o robô enxerga com o radar, decide para
+onde ir e escolhe a hora de atirar sozinho, dezenas de vezes por segundo.
 
 O robô que competiu está aqui: [`dist/TCN_bots.java`](dist/TCN_bots.java).
 
@@ -198,19 +196,13 @@ proposital: a máquina do evento era desconhecida.
 * [Manual](docs/ITL60801-Robocode-Manual.pdf), com a física do jogo e a API
 * [Vídeo de introdução ao Robocode](https://youtu.be/8s8BtMYZ2kw)
 
-## O que eu aprendi
+## Autor
 
-O maior erro que eu cometi foi testar errado. Eu rodava batalhas de 400 rodadas
-para ver se uma mudança tinha sido boa, mas cada fase do campeonato tem só uma
-dezena. Como o robô vai aprendendo com o adversário durante a batalha, em 400
-rodadas ele fica ótimo e em 10 mal começou. Uma mudança que parecia excelente
-estava na verdade piorando o robô na única condição que importava.
+Nathan Xavier — projeto desenvolvido para o Campeonato Robocode dos Colégios
+UniVap, da estratégia à entrega final, e testado sob as regras reais da
+competição.
 
-Depois disso passei a medir sempre do jeito que o campeonato acontece, e várias
-decisões que eu tinha tomado antes precisaram ser refeitas. Uma delas mudou
-completamente o resultado do um contra um: com a medição errada eu tinha
-aproximado demais a distância de órbita, e na condição real isso fazia o robô
-perder para a própria versão anterior.
+[github.com/nathanmxx](https://github.com/nathanmxx)
 
 ## Licença
 
