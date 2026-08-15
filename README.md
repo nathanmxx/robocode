@@ -31,7 +31,7 @@ pontuar, que é acertar sem ser acertado.
 
 ## Sobre este projeto
 
-As ideias e a maior parte do código são minhas. Usei IA (Claude, da Anthropic)
+As ideias e a maior parte do código são minhas. Usei IA
 como apoio ao longo do caminho, principalmente para escrever os scripts de
 teste em lote e para revisar trecho por trecho enquanto eu decidia a estratégia.
 As decisões de como o robô deveria se comportar, e por quê, foram minhas.
