@@ -112,7 +112,7 @@ variação entre execuções é grande: um robô pior ganha uma batalha por sort
 facilidade. Vinte batalhas seguidas já mostram se a mudança valeu.
 
 Como adversário eu escrevi robôs de treino com estilos diferentes (`src/spar/`),
-cada um explorando uma fraqueza específica — quem persegue, quem orbita, quem
+cada um explorando uma fraqueza específica: quem persegue, quem orbita, quem
 fica na parede, quem atira de longe. Um deles é a reprodução da estratégia que
 uma equipe adversária tinha anunciado que ia usar.
 
@@ -182,7 +182,7 @@ O aninhamento não é detalhe estético. Na primeira versão as auxiliares ficav
 soltas no mesmo arquivo, o que Java aceita, mas isso colocava `class Enemy` na
 primeira linha e a classe do robô lá pela linha 850. Quem abria o arquivo
 procurando o nome da equipe encontrava outro nome no topo e concluía que estava
-errado — foi exatamente o que aconteceu na conferência da entrega. Com as
+errado, e foi exatamente o que aconteceu na conferência da entrega. Com as
 auxiliares dentro da classe principal, o arquivo declara uma coisa só e ela
 aparece logo abaixo dos imports.
 
@@ -198,7 +198,7 @@ proposital: a máquina do evento era desconhecida.
 
 ## Autor
 
-Nathan Xavier — projeto desenvolvido para o Campeonato Robocode dos Colégios
+Projeto de Nathan Xavier, desenvolvido para o Campeonato Robocode dos Colégios
 UniVap, da estratégia à entrega final, e testado sob as regras reais da
 competição.
 

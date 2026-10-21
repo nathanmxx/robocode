@@ -9,9 +9,9 @@ import java.util.List;
  *
  * A ideia: em vez de decidir "para onde ir" com uma regra fixa (orbitar, fugir,
  * perseguir), o robo espalha pontos candidatos ao seu redor, atribui um custo a
- * cada um e vai para o mais barato. O comportamento emerge do custo — perto de
+ * cada um e vai para o mais barato. O comportamento emerge do custo: perto de
  * muita gente fica caro, canto fica caro, ficar parado na mesma linha de tiro
- * fica caro — e o resultado e um movimento erratico que nenhum canhao de padrao
+ * fica caro, e o resultado e um movimento erratico que nenhum canhao de padrao
  * consegue prever, sem que exista um "padrao de fuga" para o inimigo aprender.
  *
  * Essa e a peca que decide as fases 1 a 3 do campeonato: com 16 robos na arena,
@@ -25,7 +25,7 @@ public class Movement {
     /**
      * O destino so muda se o novo candidato for sensivelmente melhor. Sem essa
      * histerese o robo fica vibrando entre dois pontos de custo quase igual e
-     * na pratica nao sai do lugar — o que e a pior coisa possivel.
+     * na pratica nao sai do lugar, o que e a pior coisa possivel.
      */
     private static final double SWITCH_MARGIN = 0.92;
 
