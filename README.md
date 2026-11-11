@@ -29,6 +29,8 @@ Os dois formatos pedem coisas opostas, e é por isso que o robô tem dois modos.
 Na arena cheia dá pontos quem sobrevive; no um contra um só existe uma forma de
 pontuar, que é acertar sem ser acertado.
 
+![Certificado de primeiro colocado no Campeonato Robocode dos Colégios UniVap](docs/certificado-campeonato.webp)
+
 ## Sobre este projeto
 
 As ideias e a maior parte do código são minhas. Usei IA
